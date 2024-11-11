@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Light Theme -->
+    <color name="primary">#0E0A01</color> <!-- negro -->
+    <color name="onPrimary">#FEFDF6</color> <!-- blanco -->
+    <color name="primaryAccent">#ECCA22</color> <!-- amarillo cantoso -->
+    <color name="secondary">#C4F486</color> <!-- verde pastel -->
+    <color name="secondaryAccent">#7FEF43</color> <!-- verde cantoso -->
+    <color name="background">#F0E8BD</color> <!-- amarillo pastel -->
+
+    <!-- Dark Theme -->
+    <color name="darkPrimary">#F0E8BD</color> <!-- blanco -->
+    <color name="darkOnPrimary">#090801</color> <!-- negro -->
+    <color name="darkPrimaryAccent">#DDBB13</color> <!-- amarillo medio -->
+    <color name="darkSecondary">#4A790B</color> <!-- verde oscurito -->
+    <color name="darkSecondaryAccent">#4CBC10</color> <!-- verde cantoso -->
+    <color name="darkBackground">#433B0F</color> <!-- amarillo muy oscuro -->
 </resources>
