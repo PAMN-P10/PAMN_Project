@@ -15,10 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 
 @Composable
-fun WelcomeOptionsScreen() {
+fun WelcomeOptionsScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -31,7 +32,7 @@ fun WelcomeOptionsScreen() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Button(
-                onClick = { /* Acción de Log In */ },
+                onClick = { navController.navigate("login_screen") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC4F486)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -42,7 +43,7 @@ fun WelcomeOptionsScreen() {
             }
 
             Button(
-                onClick = { /* Acción de Sign Up */ },
+                onClick = { navController.navigate("signup1_screen") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC4F486)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -56,7 +57,7 @@ fun WelcomeOptionsScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /* Acción de Sign Up con Google */ },
+            onClick = { navController.navigate("") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFECCA22)),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier

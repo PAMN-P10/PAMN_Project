@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -44,7 +43,7 @@ fun WelcomeScreen(navController: NavController) {
 
         Button(
             onClick = { navController.navigate("welcome_options_screen") },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFECCA22)),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .padding(16.dp)
@@ -52,10 +51,8 @@ fun WelcomeScreen(navController: NavController) {
         ) {
             Text(
                 text = "Let's start cooking!",
-                color = Color(0xFF0E0A01),
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .shadow(4.dp, shape = RoundedCornerShape(8.dp))
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 16.sp
             )
         }
     }

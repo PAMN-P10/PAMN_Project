@@ -15,13 +15,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.pamn_project.screens.LoginScreen
+import com.example.pamn_project.screens.SignUp1Screen
+import com.example.pamn_project.screens.SignUp2Screen
 import com.example.pamn_project.screens.WelcomeScreen
 import com.example.pamn_project.screens.WelcomeOptionsScreen
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this) // Inicializa Firebase
         enableEdgeToEdge()
         setContent {
             PAMN_ProjectTheme {
@@ -45,13 +50,20 @@ fun AppScaffold(navController: NavHostController) {
                 navController = navController,
                 startDestination = "welcome_screen"
             ) {
-                // Pantalla de bienvenida
                 composable("welcome_screen") {
                     WelcomeScreen(navController = navController)
                 }
-                // Pantalla de opciones de autenticación
                 composable("welcome_options_screen") {
-                    WelcomeOptionsScreen()
+                    WelcomeOptionsScreen(navController = navController)
+                }
+                composable("login_screen") {
+                    LoginScreen(navController = navController)
+                }
+                composable("signup1_screen") {
+                    SignUp1Screen(navController = navController)
+                }
+                composable("signup2_screen") {
+                    SignUp2Screen(navController = navController)
                 }
             }
         }

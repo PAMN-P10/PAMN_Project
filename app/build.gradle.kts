@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -52,6 +53,17 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.storage)
+    implementation(libs.androidx.storage)
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.auth.ktx)
+    // Firebase Realtime Database
+    implementation("com.google.firebase:firebase-database-ktx")
+    // Para convertir imágenes a Base64 (esto no es necesario si ya usas BitmapFactory)
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")  // Esto es para el uso con la UI si usas alguna vista.
+    implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
