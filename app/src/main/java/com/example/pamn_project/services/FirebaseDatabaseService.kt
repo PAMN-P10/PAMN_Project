@@ -23,4 +23,18 @@ object FirebaseDatabaseService {
             e.printStackTrace()
         }
     }
+
+    suspend fun getProfileImageBase64(userId: String): String? {
+        return try {
+            val snapshot = FirebaseDatabase.getInstance()
+                .getReference("images/pfp/$userId")
+                .get()
+                .await()
+
+            snapshot.getValue(String::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

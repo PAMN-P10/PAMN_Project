@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pamn_project.screens.LoginScreen
+import com.example.pamn_project.screens.ProfileScreen
 import com.example.pamn_project.screens.SignUp1Screen
 import com.example.pamn_project.screens.SignUp2Screen
 import com.example.pamn_project.screens.WelcomeScreen
@@ -64,6 +65,9 @@ fun AppScaffold(navController: NavHostController) {
                 }
                 composable("signup2_screen") {
                     SignUp2Screen(navController = navController)
+                }
+                composable("profile_screen") {
+                    ProfileScreen(navController = navController)
                 }
             }
         }

@@ -78,7 +78,7 @@ fun SignUp2Screen(navController: NavController) {
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Default Profile Picture",
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(450.dp)
                     .weight(1f),
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -89,7 +89,7 @@ fun SignUp2Screen(navController: NavController) {
         IconButton(
             onClick = { launcher.launch("image/*") },
             modifier = Modifier
-                .size(450.dp)
+                .size(150.dp)
                 .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
         ) {
             Icon(
