@@ -1,141 +1,154 @@
 package com.example.pamn_project.screens
 
-import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Base64
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import com.example.pamn_project.services.FirebaseDatabaseService
-import com.google.firebase.auth.FirebaseAuth
-import java.io.ByteArrayOutputStream
+import com.example.pamn_project.R
+import com.example.pamn_project.services.AuthService
 import kotlinx.coroutines.launch
 
 @Composable
-fun SignUp2Screen(navController: NavController) {
-    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
-    var isImageSelected by remember { mutableStateOf(false) }
-
+fun SignUp2Screen(
+    navController: NavController,
+    signUpData: MutableMap<String, String>
+) {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var errorMessage by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()  // Crear el coroutineScope para uso en onClick
 
-    // Función para manejar la selección de imagen
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
-            profileImageUri = it
-            isImageSelected = true
+            selectedImageUri = it
         }
     }
 
-    // Función para convertir la imagen seleccionada a Base64
-    fun encodeImageToBase64(context: Context, imageUri: Uri): String {
-        val inputStream = context.contentResolver.openInputStream(imageUri)
-        val bitmap = BitmapFactory.decodeStream(inputStream)
-
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
-    }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.secondary),
+        contentAlignment = Alignment.Center
     ) {
-        if (isImageSelected && profileImageUri != null) {
-            Image(
-                painter = rememberAsyncImagePainter(profileImageUri),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(150.dp)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Default Profile Picture",
-                modifier = Modifier
-                    .size(450.dp)
-                    .weight(1f),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        IconButton(
-            onClick = { launcher.launch("image/*") },
+        Column(
             modifier = Modifier
-                .size(150.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
+                .fillMaxWidth(0.9f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Upload",
-                tint = Color.Black
-            )
-        }
+            if (selectedImageUri != null) {
+                val bitmap = remember(selectedImageUri) {
+                    BitmapFactory.decodeStream(context.contentResolver.openInputStream(selectedImageUri!!))
+                }?.asImageBitmap()
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("Upload a pfp", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (profileImageUri != null) {
-                    val base64Image = encodeImageToBase64(context, profileImageUri!!)
-
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid
-                    if (userId != null) {
-                        coroutineScope.launch {
-                            try {
-                                FirebaseDatabaseService.saveProfileImageBase64(userId, base64Image)
-                                navController.navigate("complete_signup")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Error uploading profile picture", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } else {
-                        Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Please select a profile picture", Toast.LENGTH_SHORT).show()
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Selected PFP",
+                        modifier = Modifier
+                            .size(350.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            Text("Sign Up", color = Color(0xFF0E0A01), fontSize = 16.sp)
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.default_pfp),
+                    contentDescription = "Default PFP",
+                    modifier = Modifier
+                        .size(350.dp)
+                        .clip(CircleShape),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { imagePickerLauncher.launch("image/*") },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Text("Upload a PFP", color = MaterialTheme.colorScheme.primary)
+            }
+
+            Spacer(modifier = Modifier.height(80.dp))
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        try {
+                            val pfpBase64 = selectedImageUri?.let { AuthService.convertImageToBase64(context, it) } ?: ""
+                            val result = AuthService.registerUser(
+                                signUpData["email"] ?: "",
+                                signUpData["password"] ?: "",
+                                signUpData["username"] ?: "",
+                                pfpBase64
+                            )
+                            result.onSuccess {
+                                navController.navigate("profile_screen")
+                            }.onFailure {
+                                errorMessage = "Error registering user: ${it.localizedMessage}"
+                                Toast.makeText(context, "Error: ${it.localizedMessage}", Toast.LENGTH_LONG).show()
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Unexpected error: ${e.localizedMessage}"
+                            Toast.makeText(context, "Unexpected error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth(0.6f)
+            ) {
+                Text(
+                    text = "Sign Up",
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("2/2", style = MaterialTheme.typography.labelLarge)
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("2/2", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
     }
 }

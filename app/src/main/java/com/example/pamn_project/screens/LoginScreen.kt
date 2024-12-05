@@ -2,105 +2,198 @@ package com.example.pamn_project.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
+import androidx.navigation.NavHostController
+import com.example.pamn_project.R
 import com.example.pamn_project.services.AuthService
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
-    var loginError by remember { mutableStateOf<String?>(null) }
+fun LoginScreen(navController: NavHostController) {
+    val email = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val emailError = remember { mutableStateOf<String?>(null) }
+    val passwordError = remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    Column(
+    val emailRegex = Pattern.compile("^[\\w-.]+@[\\w-]+\\.+[\\w-]{2,}$")
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.secondary)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.secondary),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = rememberAsyncImagePainter("file:///assets/chef_hat.png"),
-            contentDescription = "Ingredients Bag Zoomed",
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextFieldWithWarning(
-            label = "Email",
-            value = email,
-            onValueChange = {
-                email = it
-                emailError = if (!android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches()) "Invalid email format" else null
-            },
-            warning = emailError
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextFieldWithWarning(
-            label = "Password",
-            value = password,
-            onValueChange = { password = it },
-            warning = passwordError,
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    val result = AuthService.loginUser(email, password)
-                    result.onSuccess {
-                        navController.navigate("profile_screen")
-                    }.onFailure {
-                        loginError = it.message
-                    }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.fillMaxWidth(0.8f)
+                .fillMaxWidth(0.9f)
+                .background(MaterialTheme.colorScheme.secondary),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Log In", color = MaterialTheme.colorScheme.primaryContainer, fontSize = 16.sp)
-        }
+            Box(contentAlignment = Alignment.TopStart) {
+                Image(
+                    painter = painterResource(R.drawable.abstract_circle),
+                    contentDescription = "Abstract Circle",
+                    modifier = Modifier.size(250.dp)
+                )
+                Image(
+                    painter = painterResource(R.drawable.chef_hat),
+                    contentDescription = "Ingredients Bag",
+                    modifier = Modifier.size(250.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(50.dp))
 
-        loginError?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(it, color = Color.Red, fontSize = 12.sp)
+            // Entrada de Email
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+                TextField(
+                    value = email.value,
+                    onValueChange = {
+                        email.value = it
+                        emailError.value = null
+                    },
+                    isError = emailError.value != null,
+                    placeholder = { Text("Enter your email") },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Email
+                    ),
+                    trailingIcon = {
+                        if (emailError.value != null) {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
+                                contentDescription = "Error",
+                                tint = Color.Red
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                )
+                emailError.value?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Entrada de Contraseña
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+
+                TextField(
+                    value = password.value,
+                    onValueChange = {
+                        password.value = it
+                        passwordError.value = null
+                    },
+                    isError = passwordError.value != null,
+                    placeholder = { Text("Enter your password") },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    visualTransformation = PasswordVisualTransformation(),
+                    trailingIcon = {
+                        if (passwordError.value != null) {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
+                                contentDescription = "Error",
+                                tint = Color.Red
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                )
+                passwordError.value?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Botón de Log In
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        when {
+                            !emailRegex.matcher(email.value).matches() -> {
+                                emailError.value = "Invalid email format"
+                            }
+
+                            password.value.isEmpty() -> {
+                                passwordError.value = "Password cannot be empty"
+                            }
+
+                            else -> {
+                                val loginResult = AuthService.loginUser(email.value, password.value)
+                                if (loginResult.isSuccess) {
+                                    navController.navigate("profile_screen")
+                                } else {
+                                    passwordError.value = "Incorrect password or email"
+                                }
+                            }
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .defaultMinSize(minHeight = 48.dp)
+                    .shadow(8.dp, shape = MaterialTheme.shapes.medium)
+            ) {
+                Text("Log In", color = MaterialTheme.colorScheme.primary)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

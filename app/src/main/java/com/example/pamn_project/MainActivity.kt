@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
@@ -17,12 +17,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pamn_project.screens.LoginScreen
 import com.example.pamn_project.screens.ProfileScreen
-import com.example.pamn_project.screens.SignUp1Screen
 import com.example.pamn_project.screens.SignUp2Screen
 import com.example.pamn_project.screens.WelcomeScreen
 import com.example.pamn_project.screens.WelcomeOptionsScreen
+import com.example.pamn_project.screens.SignUp1Screen
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
 import com.google.firebase.FirebaseApp
+import com.example.pamn_project.services.AuthService
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +42,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppScaffold(navController: NavHostController) {
+    // Variables para almacenar datos de usuario
+    val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Cargar los datos del usuario cuando se inicie la pantalla
+    LaunchedEffect(Unit) {
+        val currentUser = AuthService.getCurrentUser()
+        if (currentUser != null) {
+            // Cargar los datos del usuario desde Firebase
+            val userInfo = AuthService.getUserData(currentUser.uid)
+            userData.value = userInfo?.toMutableMap() ?: mutableMapOf()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -61,18 +77,35 @@ fun AppScaffold(navController: NavHostController) {
                     LoginScreen(navController = navController)
                 }
                 composable("signup1_screen") {
-                    SignUp1Screen(navController = navController)
+                    SignUp1Screen(navController, userData.value)
                 }
                 composable("signup2_screen") {
-                    SignUp2Screen(navController = navController)
+                    SignUp2Screen(navController, userData.value)
                 }
                 composable("profile_screen") {
                     ProfileScreen(navController = navController)
                 }
+                /*composable("profile_screen") {
+                    ProfileScreen(
+                        navigateBack = { navController.popBackStack() },
+                        updateUserData = { newData ->
+                            coroutineScope.launch {
+                                val currentUser = AuthService.getCurrentUser()
+                                if (currentUser != null) {
+                                    AuthService.updateUserData(currentUser.uid, newData)
+                                    userData.value = AuthService.getUserData(currentUser.uid) as MutableMap<String, String>
+                                }
+                            }
+                        },
+                        getUserData = { userData.value ?: mapOf() }
+                    )
+                }*/
             }
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable
