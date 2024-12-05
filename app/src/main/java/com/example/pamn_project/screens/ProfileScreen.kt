@@ -72,7 +72,6 @@ fun ProfileScreen(navController: NavHostController) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Imagen de perfil
         Box(
             modifier = Modifier
                 .size(350.dp)

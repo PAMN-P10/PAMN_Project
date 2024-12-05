@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -61,7 +60,6 @@ fun LoginScreen(navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(50.dp))
 
-            // Entrada de Email
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -110,7 +108,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Entrada de Contraseña
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +155,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botón de Log In
             Button(
                 onClick = {
                     coroutineScope.launch {

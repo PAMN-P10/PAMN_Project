@@ -24,7 +24,6 @@ import com.example.pamn_project.screens.SignUp1Screen
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
 import com.google.firebase.FirebaseApp
 import com.example.pamn_project.services.AuthService
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,21 +84,6 @@ fun AppScaffold(navController: NavHostController) {
                 composable("profile_screen") {
                     ProfileScreen(navController = navController)
                 }
-                /*composable("profile_screen") {
-                    ProfileScreen(
-                        navigateBack = { navController.popBackStack() },
-                        updateUserData = { newData ->
-                            coroutineScope.launch {
-                                val currentUser = AuthService.getCurrentUser()
-                                if (currentUser != null) {
-                                    AuthService.updateUserData(currentUser.uid, newData)
-                                    userData.value = AuthService.getUserData(currentUser.uid) as MutableMap<String, String>
-                                }
-                            }
-                        },
-                        getUserData = { userData.value ?: mapOf() }
-                    )
-                }*/
             }
         }
     }
