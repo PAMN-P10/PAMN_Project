@@ -117,7 +117,7 @@ fun SignUp2Screen(
                                 pfpBase64
                             )
                             result.onSuccess {
-                                navController.navigate("profile_screen")
+                                navController.navigate("tem_home_screen")
                             }.onFailure {
                                 errorMessage = "Error registering user: ${it.localizedMessage}"
                                 Toast.makeText(context, "Error: ${it.localizedMessage}", Toast.LENGTH_LONG).show()

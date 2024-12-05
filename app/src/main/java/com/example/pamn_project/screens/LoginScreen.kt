@@ -170,7 +170,7 @@ fun LoginScreen(navController: NavHostController) {
                             else -> {
                                 val loginResult = AuthService.loginUser(email.value, password.value)
                                 if (loginResult.isSuccess) {
-                                    navController.navigate("profile_screen")
+                                    navController.navigate("tem_home_screen")
                                 } else {
                                     passwordError.value = "Incorrect password or email"
                                 }

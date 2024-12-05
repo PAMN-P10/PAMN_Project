@@ -1,3 +1,5 @@
+// File: app/src/main/java/com/example/pamn_project/MainActivity.kt
+
 package com.example.pamn_project
 
 import android.os.Bundle
@@ -11,19 +13,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.pamn_project.screens.LoginScreen
-import com.example.pamn_project.screens.ProfileScreen
-import com.example.pamn_project.screens.SignUp2Screen
-import com.example.pamn_project.screens.WelcomeScreen
-import com.example.pamn_project.screens.WelcomeOptionsScreen
-import com.example.pamn_project.screens.SignUp1Screen
+import com.example.pamn_project.screens.*
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
 import com.google.firebase.FirebaseApp
 import com.example.pamn_project.services.AuthService
+import com.example.pamn_project.viewmodels.RecipeViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +43,9 @@ fun AppScaffold(navController: NavHostController) {
     // Variables para almacenar datos de usuario
     val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
     val coroutineScope = rememberCoroutineScope()
+
+    // Instanciar el RecipeViewModel
+    val recipeViewModel: RecipeViewModel = viewModel()
 
     // Cargar los datos del usuario cuando se inicie la pantalla
     LaunchedEffect(Unit) {
@@ -81,15 +83,22 @@ fun AppScaffold(navController: NavHostController) {
                 composable("signup2_screen") {
                     SignUp2Screen(navController, userData.value)
                 }
+                composable("tem_home_screen") {
+                    TemHomeScreen(navController = navController)
+                }
                 composable("profile_screen") {
                     ProfileScreen(navController = navController)
+                }
+                composable("recipeform1_screen") {
+                    RecipeForm1Screen(navController)
+                }
+                composable("recipeform2_screen") {
+                    RecipeForm2Screen(navController)
                 }
             }
         }
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
