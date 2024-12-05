@@ -1,7 +1,5 @@
 package com.example.pamn_project.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,90 +7,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import com.example.pamn_project.services.AuthService
-import kotlinx.coroutines.launch
+import com.example.pamn_project.ui.components.TextFieldWithWarning
 
 @Composable
-fun TextFieldWithWarning(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    warning: String? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None
-) {
-    Column {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label) },
-            isError = warning != null,
-            visualTransformation = visualTransformation,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        warning?.let {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(it, color = Color.Red, fontSize = 12.sp)
-        }
-    }
-}
-
-
-@Composable
-fun SignUp1Screen(navController: NavController) {
+fun SignUp1Screen(navController: NavController, onCollectData: String.Companion) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var repeatPassword by remember { mutableStateOf("") }
 
-    // For warnings
     var emailWarning by remember { mutableStateOf<String?>(null) }
     var usernameWarning by remember { mutableStateOf<String?>(null) }
     var passwordWarning by remember { mutableStateOf<String?>(null) }
     var repeatPasswordWarning by remember { mutableStateOf<String?>(null) }
-    var signUpError by remember { mutableStateOf<String?>(null) }
-
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = rememberAsyncImagePainter("file:///android_asset/chef_hat.png"),
-            contentDescription = "Chef's Hat",
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         TextFieldWithWarning(
             label = "Email",
             value = email,
@@ -104,7 +51,6 @@ fun SignUp1Screen(navController: NavController) {
             },
             warning = emailWarning
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         TextFieldWithWarning(
@@ -118,7 +64,6 @@ fun SignUp1Screen(navController: NavController) {
             },
             warning = usernameWarning
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         TextFieldWithWarning(
@@ -136,7 +81,6 @@ fun SignUp1Screen(navController: NavController) {
             warning = passwordWarning,
             visualTransformation = PasswordVisualTransformation()
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         TextFieldWithWarning(
@@ -151,35 +95,18 @@ fun SignUp1Screen(navController: NavController) {
             warning = repeatPasswordWarning,
             visualTransformation = PasswordVisualTransformation()
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                coroutineScope.launch {
-                    if (emailWarning == null && usernameWarning == null && passwordWarning == null && repeatPasswordWarning == null) {
-                        val result = AuthService.registerUser(email, password, username)
-                        result.onSuccess {
-                            navController.navigate("signup2_screen")
-                        }.onFailure {
-                            signUpError = it.message
-                        }
-                    } else {
-                        signUpError = "Please fix the errors above before proceeding."
-                    }
+                if (emailWarning == null && usernameWarning == null && passwordWarning == null && repeatPasswordWarning == null) {
+                    onCollectData(email, username, password)
+                    navController.navigate("signup2_screen")
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth(0.8f)
         ) {
-            Text("Next", color = MaterialTheme.colorScheme.primary, fontSize = 16.sp)
-        }
-
-
-        signUpError?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(it, color = Color.Red, fontSize = 12.sp)
+            Text("Next")
         }
     }
 }
