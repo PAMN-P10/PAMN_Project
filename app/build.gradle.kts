@@ -5,6 +5,7 @@ plugins {
 
     alias(libs.plugins.googleServices)
     alias(libs.plugins.crashlytics)
+    alias(libs.plugins.jetbrainsKotlinSerializarion)
 
 }
 
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
