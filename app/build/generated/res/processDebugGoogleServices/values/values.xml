@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="firebase_database_url" translatable="false">https://letscook-aad5f-default-rtdb.europe-west1.firebasedatabase.app</string>
+    <string name="gcm_defaultSenderId" translatable="false">761778476934</string>
+    <string name="google_api_key" translatable="false">AIzaSyAQZiA3ZNbxO-ZTFjZq1qAbYvyHj4sEgho</string>
+    <string name="google_app_id" translatable="false">1:761778476934:android:8f6a3f269073ff7c193e07</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAQZiA3ZNbxO-ZTFjZq1qAbYvyHj4sEgho</string>
+    <string name="google_storage_bucket" translatable="false">letscook-aad5f.firebasestorage.app</string>
+    <string name="project_id" translatable="false">letscook-aad5f</string>
+</resources>
