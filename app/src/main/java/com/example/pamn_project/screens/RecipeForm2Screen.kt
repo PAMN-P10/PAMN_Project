@@ -1,7 +1,6 @@
-// File: app/src/main/java/com/example/pamn_project/screens/RecipeForm2Screen.kt
-
 package com.example.pamn_project.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -22,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.pamn_project.R
 
 @Composable
 fun RecipeForm2Screen(navController: NavHostController) {
@@ -68,23 +69,29 @@ fun RecipeForm2Screen(navController: NavHostController) {
         // Mostrar el temporizador
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(0.dp) // Eliminar padding en el Row
+            modifier = Modifier.padding(top = 4.dp) // Eliminar padding en el Row
         ) {
             // IconButton con tamaño ajustado y sin padding extra
             IconButton(
                 onClick = { showTimerInput = !showTimerInput },
                 modifier = Modifier
                     .padding(0.dp) // Eliminar padding del IconButton
-                    .size(36.dp)  // Ajustar el tamaño del IconButton (ajustar como prefieras)
+                    .size(25.dp)  // Ajustar el tamaño del IconButton (ajustar como prefieras)
                     .align(Alignment.CenterVertically) // Asegurarse que el ícono esté centrado
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Timer",
                     tint = if (showTimerInput) MaterialTheme.colorScheme.primary else Color.Gray,
-                    modifier = Modifier.size(24.dp) // Cambiar tamaño del ícono (ajusta el valor como desees)
+                    modifier = Modifier.padding(0.dp).fillMaxSize() // Cambiar tamaño del ícono (ajusta el valor como desees)
                 )
             }
+            // Imgen timer
+            Image(
+                painter = painterResource(R.drawable.timer),
+                contentDescription = "Timer",
+                modifier = Modifier.size(36.dp)
+            )
             // Texto al lado del ícono
             Text("Add timer for this step", style = MaterialTheme.typography.bodyMedium)
         }
@@ -161,13 +168,15 @@ fun RecipeForm2Screen(navController: NavHostController) {
 @Composable
 fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
     // Manejo del estado para horas, minutos y segundos.
-    var hours by remember { mutableStateOf(timerValue.split(":").getOrNull(0) ?: "00") }
-    var minutes by remember { mutableStateOf(timerValue.split(":").getOrNull(1) ?: "00") }
-    var seconds by remember { mutableStateOf(timerValue.split(":").getOrNull(2) ?: "00") }
+    var hours by remember { mutableStateOf("") }
+    var minutes by remember { mutableStateOf("") }
+    var seconds by remember { mutableStateOf("") }
 
     // Actualizar el valor completo del temporizador al cambiar cualquier parte.
     fun updateTimer() {
-        onTimerChange("${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}")
+        onTimerChange(
+            "${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}"
+        )
     }
 
     Row(
@@ -217,10 +226,9 @@ fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
 
 @Composable
 fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Unit) {
-    // Campo de texto individual con validación para 2 caracteres numéricos.
     Box(
         modifier = Modifier
-            .width(48.dp) // Ancho fijo para que todos los campos tengan el mismo tamaño
+            .width(48.dp)
             .border(1.dp, Color.Black, MaterialTheme.shapes.medium)
             .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.onPrimary)
@@ -237,7 +245,12 @@ fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Un
             textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
             decorationBox = { innerTextField ->
                 if (value.isEmpty()) {
-                    Text(placeholder, color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+                    // Mostrar placeholder si el campo está vacío
+                    Text(
+                        placeholder,
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+                    )
                 }
                 innerTextField()
             },
@@ -245,7 +258,6 @@ fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Un
         )
     }
 }
-
 
 @Composable
 fun InstructionRow(step: String, timer: String, stepNumber: Int, onRemove: (Int) -> Unit) {
