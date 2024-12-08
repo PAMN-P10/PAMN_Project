@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -24,7 +25,7 @@ import com.google.firebase.FirebaseApp
 import com.example.pamn_project.services.AuthService
 import com.example.pamn_project.viewmodels.RecipeViewModel
 
-class MainActivity : ComponentActivity() {
+/*class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this) // Inicializa Firebase
@@ -34,6 +35,31 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController() // Controlador de navegación
                 AppScaffold(navController = navController)
             }
+        }
+    }
+}*/
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            PAMN_ProjectTheme {
+                Direct()
+            }
+        }
+    }
+}
+
+@Composable
+fun Direct() {
+    val navController = rememberNavController()
+
+    // Configuramos el NavHost para una navegación directa a RecipeForm1
+    NavHost(
+        navController = navController,
+        startDestination = "recipeform2_screen"
+    ) {
+        composable("recipeform2_screen") {
+            RecipeForm2Screen(navController = navController)
         }
     }
 }
@@ -90,10 +116,10 @@ fun AppScaffold(navController: NavHostController) {
                     ProfileScreen(navController = navController)
                 }
                 composable("recipeform1_screen") {
-                    RecipeForm1Screen(navController)
+                    RecipeForm1Screen(navController = navController)
                 }
                 composable("recipeform2_screen") {
-                    RecipeForm2Screen(navController)
+                    RecipeForm2Screen(navController = navController)
                 }
             }
         }
