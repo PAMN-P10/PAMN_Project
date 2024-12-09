@@ -25,17 +25,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.pamn_project.R
 
 @Composable
-fun RecipeForm2Screen(navController: NavHostController) {
+fun RecipeForm2Screen(navController: NavController, recipeTitle: String, recipeDescription: String, recipeImage: String, recipeIngredients: List<String>) {
     val scrollState = rememberScrollState()
     var instruction by remember { mutableStateOf("") }
     val steps = remember { mutableStateListOf<Pair<String, String>>() }
     var showTimerInput by remember { mutableStateOf(false) }
     var timerValue by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +65,6 @@ fun RecipeForm2Screen(navController: NavHostController) {
                 }
             )
         }
-
         // Mostrar el temporizador
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -95,13 +94,9 @@ fun RecipeForm2Screen(navController: NavHostController) {
             // Texto al lado del ícono
             Text("Add timer for this step", style = MaterialTheme.typography.bodyMedium)
         }
-
         if (showTimerInput) {
             TimerInput(timerValue = timerValue, onTimerChange = { timerValue = it })
         }
-
-
-
         // Botón para agregar paso
         Button(
             onClick = {
@@ -117,9 +112,7 @@ fun RecipeForm2Screen(navController: NavHostController) {
         ) {
             Text("Add Step", color = MaterialTheme.colorScheme.primary)
         }
-
         Spacer(Modifier.height(8.dp))
-
         // Lista de pasos
         Text("Steps Added:", style = MaterialTheme.typography.bodyMedium)
         LazyColumn(
@@ -141,12 +134,27 @@ fun RecipeForm2Screen(navController: NavHostController) {
                 )
             }
         }
-
         Spacer(Modifier.height(16.dp))
-
         // Botón para enviar receta
         Button(
-            onClick = { navController.navigate("my_recipes_screen") },
+            onClick = {
+                // Crear la receta final combinando los datos
+                val recipeData = mapOf(
+                    "title" to recipeTitle,
+                    "description" to recipeDescription,
+                    "image" to recipeImage,
+                    "ingredients" to recipeIngredients,
+                    "steps" to steps.mapIndexed { index, step ->
+                        mapOf(
+                            "stepNumber" to (index + 1),
+                            "instruction" to step.first,
+                            "timer" to step.second
+                        )
+                    }
+                )
+                uploadRecipe(recipeData)
+                navController.navigate("my_recipes_screen")
+            },
             modifier = Modifier
                 .shadow(8.dp, shape = CircleShape)
                 .fillMaxWidth()
@@ -159,26 +167,26 @@ fun RecipeForm2Screen(navController: NavHostController) {
                 style = MaterialTheme.typography.labelLarge
             )
         }
-
         // Indicador de pasos
         Text("2/2", Modifier.align(Alignment.CenterHorizontally))
     }
 }
-
+fun uploadRecipe(recipeData: Map<String, Any>) {
+    // Aquí podrías realizar una llamada a tu backend o base de datos local.
+    println("Uploading recipe: $recipeData")
+}
 @Composable
 fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
     // Manejo del estado para horas, minutos y segundos.
     var hours by remember { mutableStateOf("") }
     var minutes by remember { mutableStateOf("") }
     var seconds by remember { mutableStateOf("") }
-
     // Actualizar el valor completo del temporizador al cambiar cualquier parte.
     fun updateTimer() {
         onTimerChange(
             "${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}"
         )
     }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -195,10 +203,8 @@ fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
                 updateTimer()
             }
         )
-
         // Punto fijo entre horas y minutos
         Text(":", Modifier.padding(horizontal = 4.dp), fontSize = 20.sp)
-
         // Campo para minutos (MM)
         TimerField(
             value = minutes,
@@ -208,10 +214,8 @@ fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
                 updateTimer()
             }
         )
-
         // Punto fijo entre minutos y segundos
         Text(":", Modifier.padding(horizontal = 4.dp), fontSize = 20.sp)
-
         // Campo para segundos (SS)
         TimerField(
             value = seconds,
@@ -223,7 +227,6 @@ fun TimerInput(timerValue: String, onTimerChange: (String) -> Unit) {
         )
     }
 }
-
 @Composable
 fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Unit) {
     Box(
@@ -246,10 +249,7 @@ fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Un
             decorationBox = { innerTextField ->
                 if (value.isEmpty()) {
                     // Mostrar placeholder si el campo está vacío
-                    Text(
-                        placeholder,
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
+                    Text(placeholder, color = Color.Gray, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp)
                     )
                 }
                 innerTextField()
@@ -258,7 +258,6 @@ fun TimerField(value: String, placeholder: String, onValueChange: (String) -> Un
         )
     }
 }
-
 @Composable
 fun InstructionRow(step: String, timer: String, stepNumber: Int, onRemove: (Int) -> Unit) {
     Row(
@@ -271,4 +270,3 @@ fun InstructionRow(step: String, timer: String, stepNumber: Int, onRemove: (Int)
         }
     }
 }
-

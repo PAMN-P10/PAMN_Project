@@ -13,18 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.pamn_project.screens.*
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
-import com.google.firebase.FirebaseApp
 import com.example.pamn_project.services.AuthService
 import com.example.pamn_project.viewmodel.RecipeViewModel
+import com.google.firebase.FirebaseApp
 
 
 //Código para ir directo a la pantalla deseada para ahcer puerbas del diseño
-class MainActivity : ComponentActivity() {
+/*class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -48,14 +50,25 @@ fun Direct() {
         composable("recipeform1_screen") {
             RecipeForm1Screen(navController, recipeViewModel)
         }
-        composable("recipeform2_screen") {
-            RecipeForm2Screen(navController)//, recipeViewModel)
+        composable(
+            "recipe_form_2_screen/{title}/{description}/{image}",
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType },
+                navArgument("description") { type = NavType.StringType },
+                navArgument("image") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            val description = backStackEntry.arguments?.getString("description") ?: ""
+            val image = backStackEntry.arguments?.getString("image") ?: ""
+            RecipeForm2Screen(navController, title, description, image)
         }
+
     }
-}
+}*/
 
 
-/*
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +81,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}*/
+}
 
 @Composable
 fun AppScaffold(navController: NavHostController) {
@@ -124,8 +137,22 @@ fun AppScaffold(navController: NavHostController) {
                 composable("recipeform1_screen") {
                     RecipeForm1Screen(navController, recipeViewModel)
                 }
-                composable("recipeform2_screen") {
-                    RecipeForm2Screen(navController)//, recipeViewModel)
+                composable(
+                    "recipe_form_2_screen/{title}/{description}/{image}/{ingredients}",
+                    arguments = listOf(
+                        navArgument("title") { type = NavType.StringType },
+                        navArgument("description") { type = NavType.StringType },
+                        navArgument("image") { type = NavType.StringType },
+                        navArgument("ingredients") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val title = backStackEntry.arguments?.getString("title") ?: ""
+                    val description = backStackEntry.arguments?.getString("description") ?: ""
+                    val image = backStackEntry.arguments?.getString("image") ?: ""
+                    val ingredientsString = backStackEntry.arguments?.getString("ingredients") ?: ""
+                    val ingredients = ingredientsString.split(",").filter { it.isNotEmpty() }
+
+                    RecipeForm2Screen(navController, title, description, image, ingredients)
                 }
             }
         }

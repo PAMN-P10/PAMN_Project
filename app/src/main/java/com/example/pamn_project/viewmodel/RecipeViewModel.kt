@@ -15,7 +15,7 @@ class RecipeViewModel : ViewModel() {
     var description by mutableStateOf("")
 
     // URI de la imagen seleccionada
-    var selectedImageUri: Uri? by mutableStateOf(null)
+    var selectedImageUri by mutableStateOf<Uri?>(null)
 
     // Lista de ingredientes seleccionados (par nombre de ingrediente, cantidad y unidad)
     var selectedIngredients = mutableStateListOf<Triple<String, Double, String>>()
