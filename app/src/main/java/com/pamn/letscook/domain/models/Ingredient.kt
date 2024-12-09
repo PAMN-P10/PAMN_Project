@@ -6,7 +6,8 @@ data class Ingredient(
     var quantity: Double,
     //val unit: MeasurementUnit,
     val isAllergen: Boolean = false,
-    val imageUrl: String? = null
+    //val imageUrl: String? = null
+    val image: Image
 ){
 
 }

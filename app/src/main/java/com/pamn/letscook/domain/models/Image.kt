@@ -5,6 +5,6 @@ data class Image(
     val url: String,
     //Optionals:
     val format: String? = null,
-    val with: Int? = null,
+    val width: Int? = null,
     val height: Int? = null
 )
