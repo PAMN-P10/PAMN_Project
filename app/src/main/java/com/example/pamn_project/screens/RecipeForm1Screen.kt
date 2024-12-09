@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -20,10 +21,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
-import androidx.compose.material3.TextFieldDefaults.colors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,46 +34,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.pamn_project.R
 import com.example.pamn_project.ui.components.TopBar
+import com.example.pamn_project.viewmodel.RecipeViewModel
 import java.io.InputStream
 
 @Composable
-fun RecipeForm1Screen(navController: NavHostController) {
-    var text by remember { mutableStateOf("") }
-    val title = remember { mutableStateOf("") }
-    val description = remember { mutableStateOf("") }
+fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeViewModel) {
+    var searchIngredient by remember { mutableStateOf("") }
+    val availableIngredients = remember { mutableStateListOf("Chicken", "Carrot", "Onion", "Garlic", "Tomato", "Chocolate") }
+    val filteredIngredients = availableIngredients.filter { it.startsWith(searchIngredient, ignoreCase = true) }
+    var selectedIngredient by remember { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
-
     val context = LocalContext.current as Activity
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
     var bitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
-                selectedImageUri = uri
-                val inputStream: InputStream? =
-                    context.contentResolver.openInputStream(uri)
+                recipeViewModel.selectedImageUri = uri
+                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
                 bitmap = BitmapFactory.decodeStream(inputStream)
             }
         }
     }
-    var searchIngredient by remember { mutableStateOf("") }
-    val availableIngredients = remember { mutableStateListOf("Chicken", "Carrot", "Onion", "Garlic", "Tomato", "Chocolate") }
-    val selectedIngredients = remember { mutableStateListOf<Pair<String, String>>() }
-    val filteredIngredients = availableIngredients.filter { it.startsWith(searchIngredient, ignoreCase = true) }
-    var selectedIngredient by remember { mutableStateOf<String?>(null) }
-    var expanded by remember { mutableStateOf(false) }
 
+    var quantity by remember { mutableStateOf(1.0) }
 
     Column(
         modifier = Modifier
@@ -82,7 +77,7 @@ fun RecipeForm1Screen(navController: NavHostController) {
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
 
-        TopBar(title = "Upload recipe",  onBackClick = {})
+        TopBar(title = "Upload recipe", onBackClick = {})
 
         Box(
             modifier = Modifier
@@ -96,8 +91,8 @@ fun RecipeForm1Screen(navController: NavHostController) {
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
             TextField(
-                value = title.value,
-                onValueChange = { title.value = it },
+                value = recipeViewModel.title,
+                onValueChange = { newValue -> recipeViewModel.title = newValue },
                 label = { Text("Title") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,8 +109,7 @@ fun RecipeForm1Screen(navController: NavHostController) {
             )
         }
 
-
-        Row (
+        Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -133,12 +127,14 @@ fun RecipeForm1Screen(navController: NavHostController) {
                     .background(MaterialTheme.colorScheme.onPrimary)
             ) {
                 BasicTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    modifier = Modifier.fillMaxWidth().padding(3.dp),
+                    value = recipeViewModel.description,
+                    onValueChange = { recipeViewModel.description = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(3.dp),
                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
                     decorationBox = { innerTextField ->
-                        if (text.isEmpty()) {
+                        if (recipeViewModel.description.isEmpty()) {
                             Text("Description...", fontSize = 16.sp, color = androidx.compose.ui.graphics.Color.Gray)
                         }
                         innerTextField()
@@ -158,14 +154,12 @@ fun RecipeForm1Screen(navController: NavHostController) {
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.onPrimary)
                     .clickable {
-                        // Iniciar la galería al hacer clic en el Box
                         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                         launcher.launch(intent)
                     },
                 contentAlignment = Alignment.Center
             ) {
                 if (bitmap != null) {
-                    // Si ya se seleccionó una imagen, mostrarla
                     Image(
                         bitmap = bitmap!!.asImageBitmap(),
                         contentDescription = "Uploaded Image",
@@ -173,7 +167,6 @@ fun RecipeForm1Screen(navController: NavHostController) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Si no hay imagen seleccionada, mostrar el icono y el texto
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -195,7 +188,7 @@ fun RecipeForm1Screen(navController: NavHostController) {
             }
         }
 
-        Column (
+        Column(
             modifier = Modifier
                 .height(200.dp)
                 .border(
@@ -207,7 +200,6 @@ fun RecipeForm1Screen(navController: NavHostController) {
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
 
-            // Search bar
             TextField(
                 value = searchIngredient,
                 onValueChange = { searchIngredient = it },
@@ -227,7 +219,6 @@ fun RecipeForm1Screen(navController: NavHostController) {
                 )
             )
 
-            // List of Ingredients
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -253,13 +244,14 @@ fun RecipeForm1Screen(navController: NavHostController) {
                 }
             }
 
-            // Add Button
             Button(
                 onClick = {
                     if (searchIngredient.isNotBlank() && !availableIngredients.contains(searchIngredient)) {
                         availableIngredients.add(searchIngredient)
                     }
-                    selectedIngredient?.let { selectedIngredients.add(it to "kg") }
+                    selectedIngredient?.let {
+                        recipeViewModel.addIngredient(it, quantity, "kg")
+                    }
                     searchIngredient = ""
                     selectedIngredient = null
                 },
@@ -280,7 +272,7 @@ fun RecipeForm1Screen(navController: NavHostController) {
             }
         }
 
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -292,185 +284,193 @@ fun RecipeForm1Screen(navController: NavHostController) {
                     shape = MaterialTheme.shapes.medium
                 ),
         ) {
-            // Selected Ingredients Section
             Text(
                 text = "Selected Ingredients:",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(start = 16.dp)
             )
 
-            selectedIngredients.forEachIndexed { index, ingredientPair ->
-                val (ingredientName, unit) = ingredientPair
-                var quantity by remember { mutableStateOf(1.0) }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    //horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.onPrimary)
-                        .border(
-                            width = 1.dp,
-                            color = Color.Black,
-                            shape = MaterialTheme.shapes.small
-                        )
-                        .clip(MaterialTheme.shapes.small)
-                ) {
-
-                    // Icono del ingrediente
-                    /*Icon(
-                        imageVector = Icons.DefaultFoodBank, // Reemplaza con tu ícono o imagen
-                        contentDescription = "Ingredient Icon",
-                        modifier = Modifier.size(24.dp)
-                    )*/
-
-                    // Nombre del ingrediente
-                    Text(
-                        text = ingredientName,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // Campo numérico con flechas para incrementar/decrementar
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                items(recipeViewModel.selectedIngredients.size) { index ->
+                    val (ingredientName, ingredientQuantity, unit) = recipeViewModel.selectedIngredients[index]
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
-                            .width(80.dp)
-                            .height(40.dp)
-                            .border(1.dp, Color.Black, MaterialTheme.shapes.small)
-                            .background(Color.White)
-                    ) {
-                        BasicTextField(
-                            value = "%.1f".format(quantity),
-                            onValueChange = { input ->
-                                input.toDoubleOrNull()?.let {
-                                    quantity = it
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            textStyle = LocalTextStyle.current.copy(
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(0.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    innerTextField()
-                                }
-                            }
-                        )
-                        Column(
-                            modifier = Modifier.fillMaxHeight(),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Botón para incrementar
-                            IconButton(
-                                onClick = { quantity += 1.0 },
-                                modifier = Modifier.size(16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowUp,
-                                    contentDescription = "Increase"
-                                )
-                            }
-                            // Botón para decrementar
-                            IconButton(
-                                onClick = {
-                                    if (quantity > 0) quantity -= 1.0
-                                },
-                                modifier = Modifier.size(16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "Decrease"
-                                )
-                            }
-                        }
-                    }
-
-                    // Menú desplegable para seleccionar la unidad
-                    var expanded by remember { mutableStateOf(false) }
-                    Box(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(40.dp)
+                            .background(MaterialTheme.colorScheme.onPrimary)
                             .border(
                                 width = 1.dp,
                                 color = Color.Black,
                                 shape = MaterialTheme.shapes.small
                             )
-                            .background(MaterialTheme.colorScheme.onPrimary)
                             .clip(MaterialTheme.shapes.small)
                     ) {
+                        Text(text = ingredientName, modifier = Modifier.weight(1f))
+
                         Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .clickable { expanded = !expanded }
-                                .background(MaterialTheme.colorScheme.onPrimary),
-                            verticalAlignment = Alignment.CenterVertically ,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .width(80.dp)
+                                .height(40.dp)
+                                .border(1.dp, Color.Black, MaterialTheme.shapes.small)
+                                .background(Color.White)
                         ) {
-                            Text(
-                                text = unit,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.Center
+                            BasicTextField(
+                                value = "%.1f".format(ingredientQuantity),
+                                onValueChange = { input ->
+                                    input.toDoubleOrNull()?.let {
+                                        recipeViewModel.selectedIngredients[index] =
+                                            Triple(ingredientName, it, unit)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                textStyle = LocalTextStyle.current.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(0.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        innerTextField()
+                                    }
+                                }
                             )
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxHeight(),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        val currentQuantity = recipeViewModel.selectedIngredients[index].second
+                                        recipeViewModel.selectedIngredients[index] =
+                                            Triple(ingredientName, currentQuantity + 1.0, unit)
+                                    },
+                                    modifier = Modifier.size(16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowUp,
+                                        contentDescription = "Increase"
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val currentQuantity = recipeViewModel.selectedIngredients[index].second
+                                        if (currentQuantity > 0) {
+                                            recipeViewModel.selectedIngredients[index] =
+                                                Triple(ingredientName, currentQuantity - 1.0, unit)
+                                        }
+                                    },
+                                    modifier = Modifier.size(16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Decrease"
+                                    )
+                                }
+                            }
                         }
 
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                        var expanded by remember { mutableStateOf(false) }
+                        Box(
                             modifier = Modifier
-                                .wrapContentSize()
-                                .background(MaterialTheme.colorScheme.onPrimary)
+                                .width(80.dp)
+                                .height(40.dp)
                                 .border(
                                     width = 1.dp,
                                     color = Color.Black,
-                                    shape = MaterialTheme.shapes.medium
+                                    shape = MaterialTheme.shapes.small
                                 )
-                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.onPrimary)
+                                .clip(MaterialTheme.shapes.small)
                         ) {
-                            listOf("kg", "L", "cups", "tbsp", "tsp").forEach { unitOption ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = unitOption,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    },
-                                    onClick = {
-                                        selectedIngredients[index] = ingredientName to unitOption
-                                        expanded = false
-                                    },
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.onPrimary)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable { expanded = !expanded }
+                                    .background(MaterialTheme.colorScheme.onPrimary),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = unit,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Icon(
+                                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .background(MaterialTheme.colorScheme.onPrimary)
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Black,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(MaterialTheme.shapes.medium)
+                            ) {
+                                listOf("kg", "L", "cups", "tbsp", "tsp").forEach { unitOption ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = unitOption,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        },
+                                        onClick = {
+                                            recipeViewModel.selectedIngredients[index] =
+                                                Triple(ingredientName, ingredientQuantity, unitOption)
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                recipeViewModel.removeIngredient(ingredientName)
+                            },
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Remove ingredient",
+                                tint = Color.Red
+                            )
                         }
                     }
-
                 }
             }
         }
 
-        Spacer(Modifier.height(2.dp))
-
+    Spacer(Modifier.height(2.dp))
         // Next button
         Button(
-            onClick = { navController.navigate("recipeform2_screen") },
+            onClick = {
+                Log.d("RecipeForm1Screen", "Title: ${recipeViewModel.title}")
+                Log.d("RecipeForm1Screen", "Description: ${recipeViewModel.description}")
+                Log.d("RecipeForm1Screen", "Selected Ingredients: ${recipeViewModel.selectedIngredients}")
+                navController.navigate("recipeform2_screen")
+            },
             modifier = Modifier
                 .shadow(8.dp, shape = CircleShape)
                 .fillMaxWidth()
@@ -485,7 +485,6 @@ fun RecipeForm1Screen(navController: NavHostController) {
                 style = MaterialTheme.typography.labelLarge
             )
         }
-
-        Text("1/2", Modifier.align(Alignment.CenterHorizontally))
+        Text("1/2")//, Modifier.align(Alignment.CenterHorizontally))
     }
 }

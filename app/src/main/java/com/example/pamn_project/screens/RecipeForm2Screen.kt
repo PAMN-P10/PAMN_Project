@@ -271,3 +271,4 @@ fun InstructionRow(step: String, timer: String, stepNumber: Int, onRemove: (Int)
         }
     }
 }
+

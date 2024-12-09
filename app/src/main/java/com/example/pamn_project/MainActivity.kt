@@ -1,5 +1,3 @@
-// File: app/src/main/java/com/example/pamn_project/MainActivity.kt
-
 package com.example.pamn_project
 
 import android.os.Bundle
@@ -8,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -23,21 +20,10 @@ import com.example.pamn_project.screens.*
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
 import com.google.firebase.FirebaseApp
 import com.example.pamn_project.services.AuthService
-import com.example.pamn_project.viewmodels.RecipeViewModel
+import com.example.pamn_project.viewmodel.RecipeViewModel
 
-/*class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this) // Inicializa Firebase
-        enableEdgeToEdge()
-        setContent {
-            PAMN_ProjectTheme {
-                val navController = rememberNavController() // Controlador de navegación
-                AppScaffold(navController = navController)
-            }
-        }
-    }
-}*/
+
+//Código para ir directo a la pantalla deseada para ahcer puerbas del diseño
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,17 +38,37 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Direct() {
     val navController = rememberNavController()
+    val recipeViewModel: RecipeViewModel = viewModel()
 
     // Configuramos el NavHost para una navegación directa a RecipeForm1
     NavHost(
         navController = navController,
-        startDestination = "recipeform2_screen"
+        startDestination = "recipeform1_screen"
     ) {
+        composable("recipeform1_screen") {
+            RecipeForm1Screen(navController, recipeViewModel)
+        }
         composable("recipeform2_screen") {
-            RecipeForm2Screen(navController = navController)
+            RecipeForm2Screen(navController)//, recipeViewModel)
         }
     }
 }
+
+
+/*
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this) // Inicializa Firebase
+        enableEdgeToEdge()
+        setContent {
+            PAMN_ProjectTheme {
+                val navController = rememberNavController() // Controlador de navegación
+                AppScaffold(navController = navController)
+            }
+        }
+    }
+}*/
 
 @Composable
 fun AppScaffold(navController: NavHostController) {
@@ -116,10 +122,10 @@ fun AppScaffold(navController: NavHostController) {
                     ProfileScreen(navController = navController)
                 }
                 composable("recipeform1_screen") {
-                    RecipeForm1Screen(navController = navController)
+                    RecipeForm1Screen(navController, recipeViewModel)
                 }
                 composable("recipeform2_screen") {
-                    RecipeForm2Screen(navController = navController)
+                    RecipeForm2Screen(navController)//, recipeViewModel)
                 }
             }
         }
