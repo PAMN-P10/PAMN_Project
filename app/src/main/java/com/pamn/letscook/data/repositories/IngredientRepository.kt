@@ -10,10 +10,28 @@ import kotlinx.coroutines.tasks.await
 
 class IngredientRepository(private val firestore: FirebaseFirestore) {
 
+    // Enum para categorizar tipos de errores
+    sealed class IngredientError : Exception() {
+        object NetworkError : IngredientError() {
+            private fun readResolve(): Any = NetworkError
+        }
+
+        object DatabaseError : IngredientError() {
+            private fun readResolve(): Any = DatabaseError
+        }
+
+        data class NotFoundError(override val message: String) : IngredientError()
+        data class ParseError(override val message: String) : IngredientError()
+    }
+
     // Función para guardar un ingrediente individual
     suspend fun saveIngredient(ingredient: Ingredient): Result<Unit> {
-        return try {
+        return runCatching {
             withContext(Dispatchers.IO) {
+                // Validaciones previas
+                require(ingredient.name.isNotBlank()) { "El nombre del ingrediente no puede estar vacío" }
+                require(ingredient.quantity >= 0) { "La cantidad no puede ser negativa" }
+
                 val ingredientMap = mapOf(
                     "name" to ingredient.name,
                     "type" to ingredient.type.name,
@@ -29,22 +47,37 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
                     )
                 )
 
-                firestore.collection("ingredients")
-                    .document(ingredient.name) // Usar el nombre como ID del documento
-                    .set(ingredientMap)
-                    .await()
-
-                Result.success(Unit)
+                try {
+                    firestore.collection("ingredients")
+                        .document(ingredient.name)
+                        .set(ingredientMap)
+                        .await()
+                    // Explícitamente devolver Unit porque .set() devuelve un Task<Void>
+                    Unit
+                } catch (e: Exception) {
+                    throw IngredientError.DatabaseError
+                }
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        }.onFailure { error ->
+            // Logging de errores (en un sistema real, usarías un logger)
+            println("Error al guardar ingrediente: ${error.message}")
         }
     }
 
     // Función para guardar múltiples ingredientes
-    suspend fun saveIngredients(ingredients: List<Ingredient>): Result<Unit> {
-        return try {
+    suspend fun saveIngredients(ingredients: List<Ingredient>): Result<Void> {
+        return runCatching {
             withContext(Dispatchers.IO) {
+                // Validaciones previas
+                require(ingredients.isNotEmpty()) { "La lista de ingredientes no puede estar vacía" }
+
+                // Validar cada ingrediente antes de intentar guardar
+                ingredients.forEach { ingredient ->
+                    require(ingredient.name.isNotBlank()) { "El nombre del ingrediente no puede estar vacío" }
+                    require(ingredient.quantity >= 0) { "La cantidad no puede ser negativa" }
+                }
+
+                // Preparar el batch de escritura
                 val batch = firestore.batch()
 
                 ingredients.forEach { ingredient ->
@@ -53,7 +86,6 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
                         "type" to ingredient.type.name,
                         "quantity" to ingredient.quantity,
                         "isAllergen" to ingredient.isAllergen,
-                        //"imageUrl" to ingredient.imageUrl
                         "image" to mapOf(
                             "label" to ingredient.image.label,
                             "url" to ingredient.image.url,
@@ -69,83 +101,147 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
                     batch.set(docRef, ingredientMap)
                 }
 
-                batch.commit().await()
-                Result.success(Unit)
+                try {
+                    // Intentar commitear el batch
+                    batch.commit().await()
+                } catch (e: Exception) {
+                    // Si falla el commit, lanzar un error de base de datos
+                    throw IngredientError.DatabaseError
+                }
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        }.onFailure { error ->
+            // Logging de errores
+            when (error) {
+                is IngredientError.DatabaseError ->
+                    println("Error al guardar múltiples ingredientes en la base de datos")
+                is IllegalArgumentException ->
+                    println("Error de validación: ${error.message}")
+                else ->
+                    println("Error desconocido al guardar ingredientes: ${error.message}")
+            }
         }
     }
 
     // Función para leer todos los ingredientes
     suspend fun getAllIngredients(): Result<List<Ingredient>> {
-        return try {
+        return runCatching {
             withContext(Dispatchers.IO) {
-                val snapshot = firestore.collection("ingredients")
-                    .get()
-                    .await()
-
-                val ingredients = snapshot.documents.map { document ->
-                    // Obtener el mapa de imagen directamente del documento
-                    val imageData = document.get("image") as? Map<String, Any>
-
-                    Ingredient(
-                        name = document.getString("name") ?: "",
-                        type = IngredientType.valueOf(document.getString("type") ?: "Other"),
-                        quantity = document.getDouble("quantity") ?: 0.0,
-                        isAllergen = document.getBoolean("isAllergen") ?: false,
-                        //imageUrl = document.getString("imageUrl")
-                        image = Image(
-                            label = imageData?.get("label") as? String ?: "",
-                            url = imageData?.get("url") as? String ?: "",
-                            format = imageData?.get("format") as? String,
-                            width = (imageData?.get("width") as? Number)?.toInt(),
-                            height = (imageData?.get("height") as? Number)?.toInt()
-                        )
-                    )
+                val snapshot = try {
+                    firestore.collection("ingredients")
+                        .get()
+                        .await()
+                } catch (e: Exception) {
+                    throw IngredientError.NetworkError
                 }
 
-                Result.success(ingredients)
+                // Filtrar y mapear solo los documentos válidos
+                val ingredients = snapshot.documents.mapNotNull { document ->
+                    try {
+                        val imageData = document.get("image") as? Map<String, Any>
+
+                        // Validaciones de datos
+                        val name = document.getString("name")
+                        val type = document.getString("type")
+
+                        if (name.isNullOrBlank() || type.isNullOrBlank()) {
+                            null // Saltar documentos inválidos
+                        } else {
+                            Ingredient(
+                                name = name,
+                                type = IngredientType.valueOf(type),
+                                quantity = document.getDouble("quantity") ?: 0.0,
+                                isAllergen = document.getBoolean("isAllergen") ?: false,
+                                image = Image(
+                                    label = imageData?.get("label") as? String ?: "",
+                                    url = imageData?.get("url") as? String ?: "",
+                                    format = imageData?.get("format") as? String,
+                                    width = (imageData?.get("width") as? Number)?.toInt() ?: 0,
+                                    height = (imageData?.get("height") as? Number)?.toInt() ?: 0
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // Log del documento problemático sin detener toda la operación
+                        println("Error procesando documento: ${document.id}")
+                        null
+                    }
+                }
+
+                // Verificar si la lista de ingredientes está vacía
+                if (ingredients.isEmpty()) {
+                    throw IngredientError.NotFoundError("No se encontraron ingredientes")
+                }
+
+                ingredients
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        }.onFailure { error ->
+            when (error) {
+                is IngredientError.NetworkError ->
+                    println("Error de red al recuperar ingredientes")
+                is IngredientError.NotFoundError ->
+                    println("No se encontraron ingredientes")
+                is IngredientError.ParseError ->
+                    println("Error al parsear los datos de ingredientes")
+                else ->
+                    println("Error desconocido: ${error.message}")
+            }
         }
     }
 
     // Función para leer un solo ingrediente por nombre (ID del documento)
-    suspend fun getIngredientByName(name: String): Result<Ingredient> {
-        return try {
-            withContext(Dispatchers.IO) {
-                val documentSnapshot = firestore.collection("ingredients")
-                    .document(name) // Buscar por el nombre como ID
-                    .get()
-                    .await()
 
-                if (documentSnapshot.exists()) {
+    suspend fun getIngredientByName(name: String): Result<Ingredient> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val documentSnapshot = try {
+                    firestore.collection("ingredients")
+                        .document(name)
+                        .get()
+                        .await()
+                } catch (e: Exception) {
+                    throw IngredientError.NetworkError
+                }
+
+                if (!documentSnapshot.exists()) {
+                    throw IngredientError.NotFoundError("Ingrediente no encontrado: $name")
+                }
+
+                try {
                     val imageData = documentSnapshot.get("image") as? Map<String, Any>
 
-                    val ingredient = Ingredient(
-                        name = documentSnapshot.getString("name") ?: "",
-                        type = IngredientType.valueOf(documentSnapshot.getString("type") ?: "Other"),
+                    Ingredient(
+                        name = documentSnapshot.getString("name") ?:
+                        throw IngredientError.ParseError("Nombre inválido"),
+                        type = IngredientType.valueOf(
+                            documentSnapshot.getString("type") ?:
+                            throw IngredientError.ParseError("Tipo inválido")
+                        ),
                         quantity = documentSnapshot.getDouble("quantity") ?: 0.0,
                         isAllergen = documentSnapshot.getBoolean("isAllergen") ?: false,
-                        //imageUrl = documentSnapshot.getString("imageUrl")
                         image = Image(
                             label = imageData?.get("label") as? String ?: "",
                             url = imageData?.get("url") as? String ?: "",
                             format = imageData?.get("format") as? String,
-                            width = (imageData?.get("width") as? Number)?.toInt(),
-                            height = (imageData?.get("height") as? Number)?.toInt()
+                            width = (imageData?.get("width") as? Number)?.toInt() ?: 0,
+                            height = (imageData?.get("height") as? Number)?.toInt() ?: 0
                         )
                     )
-                    Result.success(ingredient)
-                } else {
-                    // Si no existe el documento
-                    Result.failure(Exception("Ingrediente no encontrado"))
+                } catch (e: Exception) {
+                    throw IngredientError.ParseError("Error al parsear el ingrediente")
                 }
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        }.onFailure { error ->
+            when (error) {
+                is IngredientError.NetworkError ->
+                    println("Error de red al recuperar ingrediente")
+                is IngredientError.NotFoundError ->
+                    println("Ingrediente no encontrado")
+                is IngredientError.ParseError ->
+                    println("Error al parsear los datos del ingrediente")
+                else ->
+                    println("Error desconocido: ${error.message}")
+            }
         }
     }
 }
+
