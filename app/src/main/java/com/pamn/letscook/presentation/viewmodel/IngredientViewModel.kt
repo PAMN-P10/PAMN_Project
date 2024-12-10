@@ -4,11 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pamn.letscook.data.repositories.IngredientRepository
 import com.pamn.letscook.domain.models.Ingredient
+import com.pamn.letscook.domain.usecases.IngredientInitializer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class IngredientViewModel(private val repository: IngredientRepository) : ViewModel() {
+class IngredientViewModel(
+    private val repository: IngredientRepository,
+    private val ingredientInitializer: IngredientInitializer
+) : ViewModel() {
     // Estados para la lista de ingredientes y el indicador de carga
     private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
     val ingredients: StateFlow<List<Ingredient>> get() = _ingredients
@@ -19,6 +23,20 @@ class IngredientViewModel(private val repository: IngredientRepository) : ViewMo
     // Estado para manejar errores de manera explícita
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> get() = _errorMessage
+
+    fun initializeIngredients() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                ingredientInitializer.initializeIngredientsIfEmpty()
+                loadIngredients() // Carga los datos actualizados
+            } catch (e: Exception) {
+                _errorMessage.value = "Error al inicializar ingredientes: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     // para obtener los datos en una lista y mantener el estado
     // carga todos los ingredientes
