@@ -1,5 +1,7 @@
 package com.example.pamn_project
 
+//import RecipeForm1Screen
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,11 +24,13 @@ import com.example.pamn_project.screens.*
 import com.example.pamn_project.ui.theme.PAMN_ProjectTheme
 import com.example.pamn_project.services.AuthService
 import com.example.pamn_project.viewmodel.RecipeViewModel
+import com.google.common.reflect.TypeToken
 import com.google.firebase.FirebaseApp
+import com.google.gson.Gson
 
-
+/*
 //Código para ir directo a la pantalla deseada para ahcer puerbas del diseño
-/*class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -51,17 +55,30 @@ fun Direct() {
             RecipeForm1Screen(navController, recipeViewModel)
         }
         composable(
-            "recipe_form_2_screen/{title}/{description}/{image}",
+            route = "recipe_form_2_screen/{title}/{description}/{image}/{ingredients}/{userId}",
             arguments = listOf(
                 navArgument("title") { type = NavType.StringType },
                 navArgument("description") { type = NavType.StringType },
-                navArgument("image") { type = NavType.StringType }
+                navArgument("image") { type = NavType.StringType },
+                navArgument("ingredients") { type = NavType.StringType },
+                navArgument("userId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val title = backStackEntry.arguments?.getString("title") ?: ""
             val description = backStackEntry.arguments?.getString("description") ?: ""
             val image = backStackEntry.arguments?.getString("image") ?: ""
-            RecipeForm2Screen(navController, title, description, image)
+            val ingredients = backStackEntry.arguments?.getString("ingredients") ?: ""
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+
+            // Llamar a RecipeForm2Screen pasándole el userId
+            RecipeForm2Screen(
+                navController = navController,
+                title = title,
+                description = description,
+                image = image,
+                ingredients = Gson().fromJson(ingredients, object : TypeToken<List<Map<String, String>>>() {}.type),
+                userId = userId
+            )
         }
 
     }
@@ -138,21 +155,25 @@ fun AppScaffold(navController: NavHostController) {
                     RecipeForm1Screen(navController, recipeViewModel)
                 }
                 composable(
-                    "recipe_form_2_screen/{title}/{description}/{image}/{ingredients}",
+                    "recipe_form_2/{title}/{description}/{imageUri}",
                     arguments = listOf(
                         navArgument("title") { type = NavType.StringType },
                         navArgument("description") { type = NavType.StringType },
-                        navArgument("image") { type = NavType.StringType },
-                        navArgument("ingredients") { type = NavType.StringType }
+                        navArgument("imageUri") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
                     val title = backStackEntry.arguments?.getString("title") ?: ""
                     val description = backStackEntry.arguments?.getString("description") ?: ""
-                    val image = backStackEntry.arguments?.getString("image") ?: ""
-                    val ingredientsString = backStackEntry.arguments?.getString("ingredients") ?: ""
-                    val ingredients = ingredientsString.split(",").filter { it.isNotEmpty() }
+                    val imageUri = backStackEntry.arguments?.getString("imageUri")?.let { Uri.parse(it) }
 
-                    RecipeForm2Screen(navController, title, description, image, ingredients)
+                    // Verifica que los parámetros estén disponibles antes de pasarlos
+                    RecipeForm2Screen(
+                        navController = navController,
+                        title = title,
+                        description = description,
+                        imageUri = imageUri,
+                        ingredients = emptyList() // Cambiar según el estado de los ingredientes
+                    )
                 }
             }
         }

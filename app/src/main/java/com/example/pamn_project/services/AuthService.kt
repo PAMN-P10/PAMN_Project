@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream
 object AuthService {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().reference.child("users")
+    val userId: String? get() = auth.currentUser?.uid
 
     /**
      * Convierte una imagen a Base64.

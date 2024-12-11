@@ -1,13 +1,13 @@
 package com.example.pamn_project.screens
 
-import android.app.Activity
-import android.content.Intent
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -34,17 +34,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.pamn_project.services.AuthService
 import com.example.pamn_project.ui.components.TopBar
 import com.example.pamn_project.viewmodel.RecipeViewModel
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
+import java.net.URLEncoder
+import com.google.gson.Gson
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeViewModel) {
@@ -53,21 +56,10 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
     val filteredIngredients = availableIngredients.filter { it.startsWith(searchIngredient, ignoreCase = true) }
     var selectedIngredient by remember { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
-    val context = LocalContext.current as Activity
-
-    var bitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                recipeViewModel.selectedImageUri = uri
-                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-                bitmap = BitmapFactory.decodeStream(inputStream)
-            }
-        }
-    }
+    val context = LocalContext.current
     var quantity by remember { mutableStateOf(1.0) }
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     Column(
         modifier = Modifier
@@ -80,7 +72,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
@@ -110,7 +102,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 modifier = Modifier
                     .width(200.dp)
                     .height(100.dp)
-                    .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                    .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                     .clip(MaterialTheme.shapes.medium)
                     .verticalScroll(scrollState)
                     .background(MaterialTheme.colorScheme.onPrimary)
@@ -121,7 +113,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(3.dp),
-                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp),
+                    textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         if (recipeViewModel.description.isEmpty()) {
                             Text("Description...", fontSize = 16.sp, color = androidx.compose.ui.graphics.Color.Gray)
@@ -134,47 +126,23 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 modifier = Modifier
                     .width(150.dp)
                     .height(100.dp)
-                    .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                    .border(width = 1.dp,color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.onPrimary)
-                    .clickable {
-                        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                        launcher.launch(intent)
-                    },
-                contentAlignment = Alignment.Center
             ) {
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap!!.asImageBitmap(),
-                        contentDescription = "Uploaded Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Upload Icon",
-                            tint = Color.Black,
-                            modifier = Modifier.size(50.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Upload Photo",
-                            color = Color.Black,
-                            fontSize = 16.sp
-                        )
+                ImagePicker(
+                    imageUri = imageUri, // Pasar el URI de la imagen
+                    onImagePicked = { uri ->
+                        imageUri = uri // Actualizar el URI en el estado
+                        recipeViewModel.image = uri.toString() // Guardar el URI en el ViewModel
                     }
-                }
+                )
             }
         }
         Column(
             modifier = Modifier
                 .height(200.dp)
-                .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
@@ -184,7 +152,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 label = { Text("Search or add an ingredient") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium),
+                    .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -208,7 +176,6 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                 .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent),
                         )
                     }
-
                     if (filteredIngredients.isEmpty()) {
                         Text(
                             text = "No ingredients found. Add \"$searchIngredient\"?",
@@ -234,7 +201,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.secondary)
-                    .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                    .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
             ) {
                 Text("Add", color = MaterialTheme.colorScheme.primary)
             }
@@ -247,13 +214,14 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 .background(MaterialTheme.colorScheme.onPrimary)
                 .border(
                     width = 1.dp,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.medium
                 ),
         ) {
             Text(
                 text = "Selected Ingredients:",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp)
             )
             LazyColumn(
@@ -267,18 +235,18 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.onPrimary)
-                            .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.small)
+                            .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
                             .clip(MaterialTheme.shapes.small)
                     ) {
-                        Text(text = ingredientName, modifier = Modifier.weight(1f))
+                        Text(text = ingredientName, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.primary)
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .width(80.dp)
                                 .height(40.dp)
-                                .border(1.dp, Color.Black, MaterialTheme.shapes.small)
-                                .background(Color.White)
+                                .border(1.dp, color = MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                                .background(color = MaterialTheme.colorScheme.onPrimary)
                         ) {
                             BasicTextField(
                                 value = "%.1f".format(ingredientQuantity),
@@ -322,7 +290,8 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowUp,
-                                        contentDescription = "Increase"
+                                        contentDescription = "Increase",
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                                 IconButton(
@@ -333,11 +302,12 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                                 Triple(ingredientName, currentQuantity - 1.0, unit)
                                         }
                                     },
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Decrease"
+                                        contentDescription = "Decrease",
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -347,7 +317,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                             modifier = Modifier
                                 .width(80.dp)
                                 .height(40.dp)
-                                .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.small)
+                                .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
                                 .background(MaterialTheme.colorScheme.onPrimary)
                                 .clip(MaterialTheme.shapes.small)
                         ) {
@@ -378,7 +348,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                 modifier = Modifier
                                     .wrapContentSize()
                                     .background(MaterialTheme.colorScheme.onPrimary)
-                                    .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+                                    .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                                     .clip(MaterialTheme.shapes.medium)
                             ) {
                                 listOf("kg", "L", "cups", "tbsp", "tsp").forEach { unitOption ->
@@ -414,26 +384,28 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 }
             }
         }
-    Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(2.dp))
         Button(
             onClick = {
-                // Validamos que los campos requeridos estén completos antes de navegar
-                recipeViewModel.title.isNotBlank() &&
-                recipeViewModel.description.isNotBlank() &&
-                recipeViewModel.selectedImageUri != null &&
-                recipeViewModel.selectedIngredients.isNotEmpty()
-                // Convertimos la URI a String
-                val imageBase64 = encodeImageToBase64(recipeViewModel.selectedImageUri!!)
-                // Construimos los parámetros para la navegación
-                val ingredientsList = recipeViewModel.selectedIngredients.joinToString(",")
-                Log.d("RecipeForm1Screen", "Title: ${recipeViewModel.title}")
-                Log.d("RecipeForm1Screen", "Description: ${recipeViewModel.description}")
-                Log.d("RecipeForm1Screen", "Image URI: $imageBase64")
-                Log.d("RecipeForm1Screen", "Ingredients: $ingredientsList")
-                navController.navigate(
-                    "recipe_form_2_screen/${recipeViewModel.title}/${recipeViewModel.description}/$imageBase64/$ingredientsList"
-                )
-
+                Log.d("Navigation", "Title: ${recipeViewModel.title}")
+                Log.d("Navigation", "Description: ${recipeViewModel.description}")
+                Log.d("Navigation", "Image: ${recipeViewModel.image}")
+                Log.d("Navigation", "Selected Ingredients: ${recipeViewModel.selectedIngredients}")
+                if (recipeViewModel.title.isNotBlank() &&
+                    recipeViewModel.description.isNotBlank() &&
+                    recipeViewModel.image.isNotBlank() &&
+                    recipeViewModel.selectedIngredients.isNotEmpty()
+                ) {
+                    navController.navigate(
+                        "recipe_form_2_screen/" +
+                                "${recipeViewModel.title}/" +
+                                "${recipeViewModel.description}/" +
+                                "${recipeViewModel.image}/" +
+                                "${recipeViewModel.selectedIngredients.joinToString(",")}"
+                    )
+                } else {
+                    Toast.makeText(context, "All fields are required!", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier
                 .shadow(8.dp, shape = CircleShape)
@@ -449,22 +421,56 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 style = MaterialTheme.typography.labelLarge
             )
         }
-
-        Text("1/2")//, Modifier.align(Alignment.CenterHorizontally))
+        Text("1/2", Modifier.align(Alignment.CenterHorizontally))
     }
 }
 
 @Composable
-fun encodeImageToBase64(uri: Uri): String? {
+fun ImagePicker(
+    imageUri: Uri?,
+    onImagePicked: (Uri) -> Unit
+) {
     val context = LocalContext.current
-    return try {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val bitmap = BitmapFactory.decodeStream(inputStream)
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-        Base64.encodeToString(byteArray, Base64.DEFAULT)
-    } catch (e: Exception) {
-        null
+    var selectedImageUri by remember { mutableStateOf<Uri?>(imageUri) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            onImagePicked(it) // Ahora pasa el URI directamente
+            selectedImageUri = it
+        }
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                launcher.launch("image/*")
+            }
+    ) {
+        if (selectedImageUri != null) {
+            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.size(100.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "Upload Icon",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(50.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Upload Photo",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 16.sp
+        )
     }
 }

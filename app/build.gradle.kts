@@ -64,6 +64,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")  // Esto es para el uso con la UI si usas alguna vista.
     implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation ("com.google.code.gson:gson:2.10.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
