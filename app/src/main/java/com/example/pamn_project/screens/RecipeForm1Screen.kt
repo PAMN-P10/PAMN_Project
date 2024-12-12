@@ -1,6 +1,7 @@
 package com.example.pamn_project.screens
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -45,7 +46,6 @@ import com.example.pamn_project.services.AuthService
 import com.example.pamn_project.ui.components.TopBar
 import com.example.pamn_project.viewmodel.RecipeViewModel
 import java.net.URLEncoder
-import com.google.gson.Gson
 import java.io.File
 import java.io.FileOutputStream
 
@@ -56,10 +56,10 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
     val filteredIngredients = availableIngredients.filter { it.startsWith(searchIngredient, ignoreCase = true) }
     var selectedIngredient by remember { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
-    val context = LocalContext.current
     var quantity by remember { mutableStateOf(1.0) }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -136,6 +136,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                         imageUri = uri // Actualizar el URI en el estado
                         recipeViewModel.image = uri.toString() // Guardar el URI en el ViewModel
                     }
+
                 )
             }
         }
@@ -396,12 +397,12 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                     recipeViewModel.image.isNotBlank() &&
                     recipeViewModel.selectedIngredients.isNotEmpty()
                 ) {
+                    val encodedTitle = Uri.encode(recipeViewModel.title)
+                    val encodedDescription = Uri.encode(recipeViewModel.description)
+                    val encodedImageUri = Uri.encode(recipeViewModel.image)
+                    val encodedIngredients = Uri.encode(recipeViewModel.selectedIngredients.joinToString(";"))
                     navController.navigate(
-                        "recipe_form_2_screen/" +
-                                "${recipeViewModel.title}/" +
-                                "${recipeViewModel.description}/" +
-                                "${recipeViewModel.image}/" +
-                                "${recipeViewModel.selectedIngredients.joinToString(",")}"
+                        "recipeform2_screen/$encodedTitle/$encodedDescription/$encodedImageUri/$encodedIngredients"
                     )
                 } else {
                     Toast.makeText(context, "All fields are required!", Toast.LENGTH_SHORT).show()
@@ -434,13 +435,24 @@ fun ImagePicker(
     var selectedImageUri by remember { mutableStateOf<Uri?>(imageUri) }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
-            onImagePicked(it) // Ahora pasa el URI directamente
+            // Persistir permisos para este URI
+            val contentResolver = context.contentResolver
+            try {
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            } catch (e: SecurityException) {
+                Log.e("ImagePicker", "Failed to persist URI permissions: ${e.message}")
+            }
+            onImagePicked(it)
             selectedImageUri = it
         }
     }
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -448,16 +460,24 @@ fun ImagePicker(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                launcher.launch("image/*")
+                launcher.launch(arrayOf("image/*"))
             }
     ) {
         if (selectedImageUri != null) {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.size(100.dp)
-            )
+            val bitmap = try {
+                MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
+            } catch (e: Exception) {
+                Log.e("ImagePicker", "Error loading image: ${e.message}")
+                null
+            }
+
+            bitmap?.let {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Icon(

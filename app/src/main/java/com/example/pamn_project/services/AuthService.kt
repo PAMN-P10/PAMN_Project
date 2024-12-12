@@ -1,6 +1,7 @@
 package com.example.pamn_project.services
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -30,6 +31,7 @@ object AuthService {
         val byteArray = byteArrayOutputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
+
 
     fun decodeBase64ToBitmap(base64String: String): Bitmap? {
         return try {

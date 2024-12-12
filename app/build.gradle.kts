@@ -65,6 +65,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation(libs.firebase.crashlytics.buildtools)
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation("io.coil-kt:coil-compose:2.2.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

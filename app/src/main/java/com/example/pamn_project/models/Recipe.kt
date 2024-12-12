@@ -3,7 +3,7 @@ package com.example.pamn_project.models
 data class Recipe(
     val title: String = "",
     val description: String = "",
-    val imageUri: String = "",  // Cambiado a imageUri
+    val image: String = "",
     val ingredients: List<Ingredient> = listOf(),
     val steps: List<Step> = listOf()
 )

@@ -1,6 +1,10 @@
 package com.example.pamn_project.screens
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,12 +27,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.pamn_project.R
+import com.example.pamn_project.services.AuthService
+import com.example.pamn_project.services.RecipeService
+import java.io.InputStream
 
 @Composable
 fun RecipeForm2Screen(
@@ -46,6 +57,18 @@ fun RecipeForm2Screen(
         Log.d("RecipeForm2Screen", "Ingredients: $ingredients")
     }
 
+    //val context = LocalContext.current // Obtener el contexto directamente
+    // Convertir la imagen a Base64 si existe
+    /*val base64Image = imageUri?.let { convertImageToBase64(context, it) }
+    Log.d("Base64", "Imagen en Base64: $base64Image")*/
+    val context = LocalContext.current
+    val imageBase64 = remember(imageUri) {
+        imageUri?.let { convertImageToBase64(context, it) }
+    }
+    Log.d("Base64", "Imagen en Base64: $imageBase64")
+
+
+    val userId = AuthService.userId // Obtener UID directamente
 
 
 
@@ -61,6 +84,11 @@ fun RecipeForm2Screen(
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
     ) {
+
+        val imageUri2 = Uri.parse("$imageUri")  // Esta es solo una URI de ejemplo
+        Log.d("RecipeForm2Screen", "imageUri2: $imageUri2")
+        ShowImage(uri = imageUri2!!)
+
         // Input para instrucciones
         Box(
             modifier = Modifier
@@ -165,7 +193,28 @@ fun RecipeForm2Screen(
 
         // Botón para enviar receta
         Button(
-            onClick = { navController.navigate("my_recipes_screen") },
+            onClick = {
+                /*if (userId != null) {
+                    val recipe = mapOf(
+                        "title" to title,
+                        "description" to description,
+                        "image" to (imageBase64 ?: ""),
+                        "ingredients" to ingredients,
+                        "steps" to steps.mapIndexed { index, step ->
+                            mapOf(
+                                "stepNumber" to (index + 1).toString(),
+                                "instruction" to step.first,
+                                "timer" to step.second
+                            )
+                        },
+                        "userId" to userId
+                    )
+                    RecipeService.uploadRecipe(recipe)*/
+                    navController.navigate("tem_home_screen")
+                /*} else {
+                    Log.e("RecipeForm2Screen", "User ID is null. Cannot upload recipe.")
+                }*/
+            },
             modifier = Modifier
                 .shadow(8.dp, shape = CircleShape)
                 .fillMaxWidth()
@@ -289,4 +338,51 @@ fun InstructionRow(step: String, timer: String, stepNumber: Int, onRemove: (Int)
             Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove Step", tint = Color.Red)
         }
     }
+}
+
+// Función para convertir la imagen a base64
+fun convertImageToBase64(context: Context, imageUri: Uri): String {
+    val contentResolver = context.contentResolver
+
+// Asegúrate de que la URI tenga permisos de lectura
+    val inputStream = contentResolver.openInputStream(imageUri)
+    inputStream?.let {
+        val byteArray = it.readBytes()
+        it.close()
+        val base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        Log.d("Base64", "Imagen en Base64: $base64Image")
+    }
+    return ""
+}
+
+
+@Composable
+fun ShowImage(uri: Uri) {
+    // Usamos Coil para cargar la imagen desde la URI
+    val painter = rememberAsyncImagePainter(uri)
+
+    when (val state = painter.state) {
+        is AsyncImagePainter.State.Loading -> {
+            Log.d("ShowImage", "Loading image...")
+            Text("Loading image...")
+        }
+        is AsyncImagePainter.State.Success -> {
+            Log.d("ShowImage", "Image loaded successfully!")
+        }
+        is AsyncImagePainter.State.Error -> {
+            Log.e("ShowImage", "Error loading image: ${state.result.throwable}")
+            Text("Error loading image")
+        }
+        else -> {
+            // Mostrar la imagen si el estado es exitoso
+            Image(painter = painter, contentDescription = "Selected Image")
+        }
+    }
+
+
+    // Mostrar la imagen usando Image
+    Image(
+        painter = painter,
+        contentDescription = "Selected Image"
+    )
 }
