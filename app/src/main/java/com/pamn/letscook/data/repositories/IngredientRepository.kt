@@ -8,7 +8,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.tasks.await
 
-class IngredientRepository(private val firestore: FirebaseFirestore) {
+class IngredientRepository(
+    private val firestore: FirebaseFirestore
+) {
 
     // Enum para categorizar tipos de errores
     sealed class IngredientError : Exception() {
@@ -52,10 +54,13 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
                         .document(ingredient.name)
                         .set(ingredientMap)
                         .await()
+
                     // Explícitamente devolver Unit porque .set() devuelve un Task<Void>
                     Unit
                 } catch (e: Exception) {
                     throw IngredientError.DatabaseError
+                    println("Error al guardar el ingrediente en la base de datos")// Imprimir por consola e
+
                 }
             }
         }.onFailure { error ->
@@ -65,6 +70,33 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
     }
 
     // Función para guardar múltiples ingredientes
+    suspend fun saveIngredients(ingredients: List<Ingredient>): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                // Validaciones previas
+                require(ingredients.isNotEmpty()) { "La lista de ingredientes no puede estar vacía" }
+
+                // Validar cada ingrediente antes de intentar guardar
+                ingredients.forEach { ingredient ->
+                    require(ingredient.name.isNotBlank()) { "El nombre del ingrediente no puede estar vacío" }
+                    require(ingredient.quantity >= 0) { "La cantidad no puede ser negativa" }
+                }
+
+                // Llama a saveIngredient para cada ingrediente
+                ingredients.forEach { ingredient ->
+                    val result = saveIngredient(ingredient)
+                    if (result.isFailure) {
+                        throw result.exceptionOrNull() ?: IngredientError.DatabaseError
+                    }
+                }
+
+                println("Todos los ingredientes se han guardado con éxito.")
+            }
+        }.onFailure { error ->
+            println("Error al guardar múltiples ingredientes: ${error.message}")
+        }
+    }
+    /**
     suspend fun saveIngredients(ingredients: List<Ingredient>): Result<Void> {
         return runCatching {
             withContext(Dispatchers.IO) {
@@ -79,6 +111,9 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
 
                 // Preparar el batch de escritura
                 val batch = firestore.batch()
+
+                println("Intentando guardar ingredientes...")
+                println("Ingredientes a guardar: $ingredients")
 
                 ingredients.forEach { ingredient ->
                     val ingredientMap = mapOf(
@@ -105,6 +140,8 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
                     // Intentar commitear el batch
                     batch.commit().await()
                 } catch (e: Exception) {
+
+                    println("Error al guardar ingredientes: ${e.message}")
                     // Si falla el commit, lanzar un error de base de datos
                     throw IngredientError.DatabaseError
                 }
@@ -121,6 +158,7 @@ class IngredientRepository(private val firestore: FirebaseFirestore) {
             }
         }
     }
+    */
 
     // Función para leer todos los ingredientes
     suspend fun getAllIngredients(): Result<List<Ingredient>> {

@@ -1,14 +1,24 @@
 package com.pamn.letscook.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
+import com.google.firebase.firestore.FirebaseFirestore
+import com.pamn.letscook.data.repositories.IngredientRepository
+import com.pamn.letscook.domain.usecases.IngredientInitializer
 import com.pamn.letscook.presentation.screens.InitialScreen
 import com.pamn.letscook.presentation.screens.HomeScreen
+import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
+import com.pamn.letscook.presentation.viewmodel.IngredientViewModelFactory
 
 @Composable
-fun NavigationWrapper(){
+fun NavigationWrapper(
+    // Pasados como dependencia
+    ingredientRepository: IngredientRepository,
+    ingredientInitializer: IngredientInitializer
+){
     val navHostController = rememberNavController() // El objeto que gestiona la navegacion
     // Advice for myself: Las constantes de ruta debería de centralizarse en un archivo separado cuando
     val initial = "InitialScreen"
@@ -36,8 +46,20 @@ fun NavigationWrapper(){
         }
         */
 
-         composable(route = home){
-            HomeScreen()
+        composable(route = home) {
+            // Instanciar la ViewModelFactory
+            val factory = IngredientViewModelFactory(
+                ingredientRepository = ingredientRepository,
+                ingredientInitializer = ingredientInitializer
+            )
+
+            // Crear la instancia del ViewModel utilizando la fábrica
+            val ingredientViewModel: IngredientViewModel = viewModel(factory = factory)
+
+            HomeScreen(viewModel = ingredientViewModel, repository = IngredientRepository(
+                FirebaseFirestore.getInstance())
+
+            )
         }
 
     }

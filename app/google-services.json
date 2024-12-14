@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "761778476934",
+    "firebase_url": "https://letscook-aad5f-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "letscook-aad5f",
+    "storage_bucket": "letscook-aad5f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761778476934:android:e2f5a26d53aba8dc193e07",
+        "android_client_info": {
+          "package_name": "com.example.pamn_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQZiA3ZNbxO-ZTFjZq1qAbYvyHj4sEgho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761778476934:android:8f6a3f269073ff7c193e07",
+        "android_client_info": {
+          "package_name": "com.pamn.letscook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQZiA3ZNbxO-ZTFjZq1qAbYvyHj4sEgho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

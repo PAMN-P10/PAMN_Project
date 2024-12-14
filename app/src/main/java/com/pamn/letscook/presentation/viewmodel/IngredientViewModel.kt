@@ -50,7 +50,7 @@ class IngredientViewModel(
                     _ingredients.value = ingredients
                 }
                 .onFailure { error ->
-                    //println("Error al cargar ingredientes: ${error.message}")
+                    //println(vv"Error al cargar ingredientes: ${error.message}")
                     handleIngredientError(error)
                 }
             _isLoading.value = false
@@ -135,4 +135,24 @@ class IngredientViewModel(
         // Opcional: Imprimir el error en el log para depuración
         println("Error en ViewModel: ${error.message}")
     }
+
+    // Sin el factory method
+    // De prueba por simplicidad
+    /**
+     * No se usa pues la lógica de creación del IngredientViewModel queda acoplada directamente a la clase misma.
+     * Esto dificultaría el uso de frameworks de inyección de dependencias como Hilt o Dagger,
+     * que suelen esperar el ViewModelProvider.Factory
+     * Rompe con el principio de Open/Closed de SOLID
+     */
+    /*
+    companion object {
+        @Provides
+        fun provideIngredientViewModel(
+            ingredientRepository: IngredientRepository
+        ): IngredientViewModel {
+            return IngredientViewModel(ingredientRepository)
+        }
+    }
+     */
+
 }
