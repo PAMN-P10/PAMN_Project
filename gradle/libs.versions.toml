@@ -18,6 +18,9 @@ kotlinSerialization = "1.7.3"
 kotlinx-coroutines = "1.7.3"
 retrofit = "2.9.0"
 uiTestAndroid = "1.7.2"
+coil = "2.4.0"
+
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +51,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 
 
