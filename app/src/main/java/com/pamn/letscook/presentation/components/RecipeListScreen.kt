@@ -246,8 +246,12 @@ fun FloatingActionButton(
         */
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
+import com.pamn.letscook.domain.models.filters
+import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -268,45 +272,58 @@ fun PopularRecipesScreen(
             TopAppBar(
                 title = { Text("Popular Recipes") },
                 actions = {
-                    // Optional: Add refresh button
                     IconButton(onClick = { recipeViewModel.loadRecipes() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh Recipes")
                     }
                 }
             )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            when {
-                isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                    )
-                }
-                errorMessage != null -> {
-                    Text(
-                        text = errorMessage ?: "An error occurred",
-                        color = Color.Red,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                recipes.isNotEmpty() -> {
-                    RecipesList(recipes = recipes)
-                }
-                else -> {
-                    Text(
-                        text = "No recipes available",
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+        },
+        content = { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                // Add FilterBar here
+                FilterBar(
+                    filter = filters,
+                    onShowFilters = {
+                        // Implement filter dialog or bottom sheet
+                        // You can add logic to show more filter options
+                    }
+                )
+
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    when {
+                        isLoading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+                        }
+                        errorMessage != null -> {
+                            Text(
+                                text = errorMessage ?: "An error occurred",
+                                color = Color.Red,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                        recipes.isNotEmpty() -> {
+                            RecipesList(recipes = recipes)
+                        }
+                        else -> {
+                            Text(
+                                text = "No recipes available",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -340,29 +357,29 @@ fun RecipeCard(recipe: Recipe) {
             ) {
                 /**
                 recipe.mainImage?.let { image ->
-                    AsyncImage(
-                        model = image.url,
-                        contentDescription = recipe.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } ?: Image(
-                    painter = painterResource(id = R.drawable.default_recipe_placeholder),
-                    contentDescription = recipe.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                AsyncImage(
+                model = image.url,
+                contentDescription = recipe.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
                 )
-                */
+                } ?: Image(
+                painter = painterResource(id = R.drawable.default_recipe_placeholder),
+                contentDescription = recipe.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+                )
+                 */
                 // Use a conditional image loading approach
-                if (recipe.mainImage?.url?.isNotBlank() == true) {
+                val imageUrl = recipe.mainImage?.url ?: recipe.ingredients.firstOrNull()?.image?.url
+                if (!imageUrl.isNullOrBlank()) {
                     AsyncImage(
-                        model = recipe.mainImage?.url,
+                        model = imageUrl,
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // Fallback to a placeholder color or icon
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -372,6 +389,8 @@ fun RecipeCard(recipe: Recipe) {
                         Text("No Image", color = Color.Gray)
                     }
                 }
+
+
             }
 
             // Recipe information

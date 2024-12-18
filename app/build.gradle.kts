@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.firebase.analytics)
     implementation(libs.google.firebase.auth)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

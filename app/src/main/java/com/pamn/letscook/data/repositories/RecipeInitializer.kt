@@ -1,6 +1,7 @@
 package com.pamn.letscook.data.repositories
 
 import com.pamn.letscook.domain.models.DifficultyLevel
+import com.pamn.letscook.domain.models.Image
 import com.pamn.letscook.domain.models.Ingredient
 import com.pamn.letscook.domain.models.PreparationStep
 import com.pamn.letscook.domain.models.Recipe
@@ -134,7 +135,7 @@ class RecipeInitializer(
                 preparationTime = 50,
                 difficulty = DifficultyLevel.Intermediate,
                 servings = 4,
-                mainImage = null,
+                mainImage = Image(label = "Classic Spaghetti Bolognese",url = "https://i.pinimg.com/736x/e3/b1/0e/e3b10e548f91c57a891f88eacc3e0eec.jpg", format = "jpg"),
                 appliedFilters = emptyList(),
                 createdAt = LocalDateTime.now()
             ),
@@ -215,7 +216,7 @@ class RecipeInitializer(
                 preparationTime = 35,
                 difficulty = DifficultyLevel.Beginner,
                 servings = 2,
-                mainImage = null,
+                mainImage = Image(label = "Vegetarian Quinoa Salad", url = "https://i.pinimg.com/736x/fa/86/81/fa8681213c9d7811f62eba0f6260f810.jpg", format = "jpg"),
                 appliedFilters = emptyList(),
                 createdAt = LocalDateTime.now()
             )
