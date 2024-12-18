@@ -11,8 +11,7 @@ import com.pamn.letscook.data.repositories.RecipeInitializer
 import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.usecases.IngredientInitializer
 import com.pamn.letscook.presentation.components.IngredientListScreen
-import com.pamn.letscook.presentation.components.IngredientRow
-import com.pamn.letscook.presentation.components.PopularRecipesScreen
+import com.pamn.letscook.presentation.screens.PopularRecipesScreen
 import com.pamn.letscook.presentation.screens.InitialScreen
 import com.pamn.letscook.presentation.screens.HomeScreen
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
