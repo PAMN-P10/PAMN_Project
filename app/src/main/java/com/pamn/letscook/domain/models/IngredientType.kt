@@ -1,7 +1,7 @@
 package com.pamn.letscook.domain.models
 
 enum class IngredientType {
-    Fruits,             // Frutas
+    Fruit,             // Frutas
     Vegetable,          // Verduras y vegetales
     Eggs,               // Huevos
     Oil,                // Aceites y grasas

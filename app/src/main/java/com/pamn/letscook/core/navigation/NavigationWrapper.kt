@@ -7,22 +7,34 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import com.google.firebase.firestore.FirebaseFirestore
 import com.pamn.letscook.data.repositories.IngredientRepository
+import com.pamn.letscook.data.repositories.RecipeInitializer
+import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.usecases.IngredientInitializer
+import com.pamn.letscook.presentation.components.IngredientListScreen
+import com.pamn.letscook.presentation.components.IngredientRow
+import com.pamn.letscook.presentation.components.PopularRecipesScreen
 import com.pamn.letscook.presentation.screens.InitialScreen
 import com.pamn.letscook.presentation.screens.HomeScreen
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModelFactory
+import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
+import com.pamn.letscook.presentation.viewmodel.RecipeViewModelFactory
 
 @Composable
 fun NavigationWrapper(
     // Pasados como dependencia
     ingredientRepository: IngredientRepository,
-    ingredientInitializer: IngredientInitializer
+    ingredientInitializer: IngredientInitializer,
+    recipeRepository: RecipeRepository,
+    recipeInitializer: RecipeInitializer
+
 ){
     val navHostController = rememberNavController() // El objeto que gestiona la navegacion
     // Advice for myself: Las constantes de ruta debería de centralizarse en un archivo separado cuando
     val initial = "InitialScreen"
     val home = "HomeScreen"
+    val ingredientRow = "IngredientRow"
+    val recipeList = "RecipeList"
 
     NavHost(navController = navHostController, startDestination = initial){
 
@@ -31,7 +43,7 @@ fun NavigationWrapper(
         //  no hay que realizar conversiones o inferencias. Las rutas como cadenas son fáciles de parsear.
         composable(route = initial){
             InitialScreen(
-                navigateToHome = { navHostController.navigate(route = home)}
+                navigateToHome = { navHostController.navigate(route = recipeList)}
             )
         }
 
@@ -61,6 +73,32 @@ fun NavigationWrapper(
 
             )
         }
+        composable(route = ingredientRow) {
+            // Instanciar la ViewModelFactory
+            val factory = IngredientViewModelFactory(
+                ingredientRepository = ingredientRepository,
+                ingredientInitializer = ingredientInitializer
+            )
+
+            // Crear la instancia del ViewModel utilizando la fábrica
+            val ingredientViewModel: IngredientViewModel = viewModel(factory = factory)
+
+            IngredientListScreen(viewModel = ingredientViewModel)
+        }
+
+        composable(route = recipeList) {
+            // Instanciar la ViewModelFactory
+            val factory = RecipeViewModelFactory(
+                recipeRepository = recipeRepository,
+                recipeInitializer = recipeInitializer
+            )
+
+            // Crear la instancia del ViewModel utilizando la fábrica
+            val recipeViewModel: RecipeViewModel = viewModel(factory = factory)
+
+            PopularRecipesScreen(recipeViewModel = recipeViewModel)
+        }
+
 
     }
 

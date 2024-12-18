@@ -19,6 +19,8 @@ kotlinx-coroutines = "1.7.3"
 retrofit = "2.9.0"
 uiTestAndroid = "1.7.2"
 coil = "2.4.0"
+firebaseAnalytics = "22.1.2"
+firebaseAuth = "23.1.0"
 
 
 
@@ -52,6 +54,8 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalytics" }
+google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 
 
 

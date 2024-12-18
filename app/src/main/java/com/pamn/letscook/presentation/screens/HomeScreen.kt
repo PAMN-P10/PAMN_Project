@@ -46,7 +46,7 @@ fun HomeScreen(
 */
 
 
-
+/**
 
     // Recibe la lista de ingredientes desde el ViewModel
     val ingredients = viewModel.ingredients.collectAsState()
@@ -116,4 +116,5 @@ fun IngredientDatabaseTest(repository: IngredientRepository) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Ingredient Name: ${ingredientName.value}")
     }
+    */
 }

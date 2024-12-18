@@ -1,7 +1,8 @@
 package com.pamn.letscook.domain.models
 
+import java.time.LocalDateTime
+
 data class Recipe(
-    val id: String? = null,
     val title: String,
     val description: String,
     val author: User,
@@ -11,7 +12,8 @@ data class Recipe(
     val difficulty: DifficultyLevel,
     val mainImage: Image? = null, // no es image de android media sino el objeto Image creado
     val servings: Int = 4,
-    val appliedFilters: List<FilterLabels> = emptyList() // filtros para la busqueda
+    val appliedFilters: List<FilterLabels> = emptyList(), // filtros para la busqueda
+    val createdAt: LocalDateTime = LocalDateTime.now() //fecha de creación
 
 ) {
     fun adjustServings(newServings: Int): Recipe {

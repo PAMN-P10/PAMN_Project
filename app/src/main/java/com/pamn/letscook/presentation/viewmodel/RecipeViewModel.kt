@@ -1,27 +1,143 @@
 package com.pamn.letscook.presentation.viewmodel
 
-
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.pamn.letscook.domain.models.FilterLabels
+import androidx.lifecycle.viewModelScope
+import com.pamn.letscook.data.repositories.RecipeInitializer
+import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.models.Recipe
-import com.pamn.letscook.domain.useCases.FilterRecipesUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class RecipeFilterViewModel(
-    private val filterRecipesUseCase: FilterRecipesUseCase // Inyección del caso de uso
+class RecipeViewModel(
+    private val repository: RecipeRepository,
+    private val recipeInitializer: RecipeInitializer
 ) : ViewModel() {
 
-    private val _filteredRecipes = MutableLiveData<List<Recipe>>()
-    val filteredRecipes: LiveData<List<Recipe>> = _filteredRecipes
+    // Estados para la UI
+    private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
+    val recipes: StateFlow<List<Recipe>> get() = _recipes
 
-    // Estado actual de los filtros
-    private val _filters = MutableLiveData<List<FilterLabels>>()
-    val filters: LiveData<List<FilterLabels>> = _filters
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> get() = _isLoading
 
-    // Actualiza los filtros y filtra las recetas
-    fun updateFilters(filters: List<FilterLabels>, allRecipes: List<Recipe>) {
-        _filters.value = filters
-        _filteredRecipes.value = filterRecipesUseCase(allRecipes, filters)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> get() = _errorMessage
+
+    fun initializeRecipes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                recipeInitializer.initializeRecipesIfEmpty()
+                loadRecipes()
+            } catch (e: Exception) {
+                _errorMessage.value = "Error initializing recipes: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // Cargar todas las recetas
+    fun loadRecipes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            repository.getAllRecipes()
+                .onSuccess { fetchedRecipes ->
+                    _recipes.value = fetchedRecipes
+                }
+                .onFailure { error ->
+                    handleRecipeError(error)
+                }
+            _isLoading.value = false
+        }
+    }
+
+    // Guardar una receta
+    fun saveRecipe(recipe: Recipe) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            repository.saveRecipe(recipe)
+                .onSuccess {
+                    loadRecipes() // Recargar las recetas después de guardar
+                }
+                .onFailure { error ->
+                    handleRecipeError(error)
+                }
+            _isLoading.value = false
+        }
+    }
+
+    // Cargar receta por título
+    fun loadRecipeByTitle(title: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            repository.getRecipeByTitle(title)
+                .onSuccess { recipe ->
+                    _recipes.value = listOf(recipe)
+                }
+                .onFailure { error ->
+                    handleRecipeError(error)
+                }
+            _isLoading.value = false
+        }
+    }
+
+    // Filtrar recetas por nombre
+    fun filterRecipesByName(query: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            repository.getAllRecipes()
+                .onSuccess { allRecipes ->
+                    _recipes.value = allRecipes.filter { recipe ->
+                        recipe.title.contains(query, ignoreCase = true)
+                    }
+                }
+                .onFailure { error ->
+                    handleRecipeError(error)
+                }
+
+            _isLoading.value = false
+        }
+    }
+
+    // Filtrar recetas por fecha de creación
+    fun filterRecipesByDate(ascending: Boolean) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            repository.getAllRecipes()
+                .onSuccess { allRecipes ->
+                    _recipes.value = if (ascending) {
+                        allRecipes.sortedBy { it.createdAt }
+                    } else {
+                        allRecipes.sortedByDescending { it.createdAt }
+                    }
+                }
+                .onFailure { error ->
+                    handleRecipeError(error)
+                }
+            _isLoading.value = false
+        }
+    }
+
+    // Manejo centralizado de errores
+    private fun handleRecipeError(error: Throwable) {
+        when (error) {
+            is RecipeRepository.RecipeError.NetworkError -> {
+                _errorMessage.value = "Network error: Check your internet connection."
+            }
+            is RecipeRepository.RecipeError.DatabaseError -> {
+                _errorMessage.value = "Database error: Unable to fetch or save data."
+            }
+            is RecipeRepository.RecipeError.NotFoundError -> {
+                _errorMessage.value = "Recipe not found."
+            }
+            else -> {
+                _errorMessage.value = "Unknown error: ${error.message}"
+            }
+        }
     }
 }
