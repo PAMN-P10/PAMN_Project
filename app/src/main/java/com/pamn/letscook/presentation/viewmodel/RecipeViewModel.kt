@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pamn.letscook.data.repositories.RecipeInitializer
 import com.pamn.letscook.data.repositories.RecipeRepository
+import com.pamn.letscook.domain.models.Ingredient
 import com.pamn.letscook.domain.models.Recipe
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -120,6 +121,29 @@ class RecipeViewModel(
                     handleRecipeError(error)
                 }
             _isLoading.value = false
+        }
+    }
+
+    fun filterRecipesByIngredients(ingredients: List<Ingredient>) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val allRecipes = repository.getAllRecipes().getOrThrow()
+                val filteredRecipes = if (ingredients.isEmpty()) {
+                    allRecipes
+                } else {
+                    allRecipes.filter { recipe ->
+                        ingredients.all { ingredient ->
+                            recipe.ingredients.any { it.name == ingredient.name }
+                        }
+                    }
+                }
+                _recipes.value = filteredRecipes
+            } catch (error: Throwable) {
+                handleRecipeError(error)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
