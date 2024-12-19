@@ -85,6 +85,11 @@ class RecipeViewModel(
         }
     }
 
+    suspend fun loadRecipeByTitleFromRepository(title: String): Recipe? {
+        return repository.getRecipeByTitle(title).getOrNull()
+    }
+
+
     // Filtrar recetas por nombre
     fun filterRecipesByName(query: String) {
         viewModelScope.launch {
