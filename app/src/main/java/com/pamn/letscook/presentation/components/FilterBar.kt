@@ -32,7 +32,8 @@ import com.pamn.letscook.domain.models.FilterLabels
 @Composable
 fun FilterBar(
     filter: List<FilterLabels>,
-    onShowFilters: () -> Unit
+    onShowFilters: () -> Unit,
+    onFilterChange: () -> Unit // Callback para cambios en los filtros seleccionados
 ) {
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
@@ -50,7 +51,10 @@ fun FilterBar(
             }
         }
         items(filter) { filterLabel ->
-            FilterChip(filter = filterLabel)
+            FilterChip(
+                filter = filterLabel,
+                onFilterToggle = onFilterChange // Llama al callback cuando cambia el estado
+            )
         }
     }
 }
@@ -58,6 +62,7 @@ fun FilterBar(
 @Composable
 private fun FilterChip(
     filter: FilterLabels,
+    onFilterToggle: () -> Unit, // Callback para notificar el cambio
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small
 ) {
@@ -88,7 +93,10 @@ private fun FilterChip(
             modifier = Modifier
                 .toggleable(
                     value = selected,
-                    onValueChange = setSelected,
+                    onValueChange = {
+                        setSelected(it) // Cambia el estado del filtro
+                        onFilterToggle() // Llama al callback
+                    },
                     interactionSource = interactionSources,
                     indication = null
                 )
