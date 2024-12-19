@@ -27,6 +27,8 @@ import com.pamn.letscook.presentation.viewmodel.IngredientViewModelFactory
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModelFactory
 import androidx.compose.ui.Modifier
+import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
+import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModelFactory
 
 @Composable
 fun NavigationWrapper(
@@ -35,7 +37,6 @@ fun NavigationWrapper(
     ingredientInitializer: IngredientInitializer,
     recipeRepository: RecipeRepository,
     recipeInitializer: RecipeInitializer
-
 ){
     val navHostController = rememberNavController() // El objeto que gestiona la navegacion
     // Advice for myself: Las constantes de ruta debería de centralizarse en un archivo separado cuando
@@ -62,6 +63,9 @@ fun NavigationWrapper(
     // Crear la instancia del ViewModel utilizando la fábrica
     val ingredientViewModel: IngredientViewModel = viewModel(factory = ingredientFactory)
 
+    // Recipe Filter setup
+    val recipeFilterViewModel: RecipeFilterViewModel = viewModel()
+
     NavHost(navController = navHostController, startDestination = initial){
 
         // Definición explícita: la ruta es una string
@@ -85,7 +89,9 @@ fun NavigationWrapper(
         */
 
         composable(route = home) {
-            HomeScreen(viewModel = ingredientViewModel, repository = IngredientRepository(
+            HomeScreen(
+                viewModel = ingredientViewModel,
+                repository = IngredientRepository(
                 FirebaseFirestore.getInstance())
 
             )
@@ -97,7 +103,12 @@ fun NavigationWrapper(
 
         composable(route = recipeList) {
 
-            PopularRecipesScreen(recipeViewModel = recipeViewModel, ingredientViewModel = ingredientViewModel, navController = navHostController)
+            PopularRecipesScreen(
+                recipeViewModel = recipeViewModel,
+                ingredientViewModel = ingredientViewModel,
+                recipeFilterViewModel = recipeFilterViewModel,
+                navController = navHostController
+            )
         }
 
         /**

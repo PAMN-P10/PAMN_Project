@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
                     ingredientRepository = ingredientRepository,
                     ingredientInitializer = ingredientInitializer,
                     recipeRepository = recipeRepository,
-                    recipeInitializer = recipeInitializer
+                    recipeInitializer = recipeInitializer,
                 )
             }
         }

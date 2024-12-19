@@ -34,13 +34,20 @@ import com.pamn.letscook.domain.models.DifficultyLevel
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pamn.letscook.domain.models.filters
 import com.pamn.letscook.presentation.components.FilterBar
 import com.pamn.letscook.presentation.components.IngredientBar
+import com.pamn.letscook.presentation.components.SearchBar
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,8 +55,12 @@ import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 fun PopularRecipesScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
     ingredientViewModel: IngredientViewModel = viewModel(),
-    navController: NavController
-) {
+    recipeFilterViewModel: RecipeFilterViewModel = viewModel(),
+    navController: NavController,
+    ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredRecipes by recipeFilterViewModel.filteredRecipes.collectAsState()
+
     // Trigger recipe initialization when the screen is first loaded
     LaunchedEffect(Unit) {
         recipeViewModel.initializeRecipes()
@@ -59,8 +70,15 @@ fun PopularRecipesScreen(
     val recipes by recipeViewModel.recipes.collectAsState()
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val selectedIngredients by ingredientViewModel.selectedIngredients.collectAsState()
+    val filters by recipeFilterViewModel.filters.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
+
+    // Filtrar recetas cada vez que cambien los filtros o las recetas
+    LaunchedEffect(filters, recipes) {
+        recipeFilterViewModel.updateFilters(filters, recipes)
+    }
+
 
     Scaffold(
         topBar = {
@@ -79,19 +97,34 @@ fun PopularRecipesScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                SearchBar(
+                    searchText = searchQuery,  // Pass the string value directly
+                    onSearchTextChange = { query ->
+                        searchQuery = query  // Update the state directly
+                        recipeViewModel.filterRecipesByName(query)
+                    },
+                    onSearchVoiceInput = { voiceQuery ->
+                        searchQuery = voiceQuery  // Update the state directly
+                        recipeViewModel.filterRecipesByName(voiceQuery)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
                 IngredientBar(
                     ingredients = ingredients,
                     selectedIngredients = selectedIngredients,
                     onIngredientSelected = { ingredientViewModel.toggleIngredientSelection(it) }
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 FilterBar(
                     filter = filters,
                     onShowFilters = {
-                        // Implement filter dialog or bottom sheet
-                        // You can add logic to show more filter options
+                        // Mostrar un diálogo o manejar filtros adicionales
+                    },
+                    onFilterChange = {
+                        recipeFilterViewModel.updateFilters(filters, recipes)
                     }
                 )
 
