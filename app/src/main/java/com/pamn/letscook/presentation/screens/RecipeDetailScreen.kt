@@ -106,7 +106,7 @@ fun RecipeDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = MaterialTheme.colorScheme.surface,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 shape = RoundedCornerShape(16.dp)
                             )
                             .padding(4.dp),
@@ -201,7 +201,7 @@ fun RowScope.TabButton(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (selected) MaterialTheme.colorScheme.secondary
-                else MaterialTheme.colorScheme.surface
+                else MaterialTheme.colorScheme.onPrimary
             )
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp),
@@ -224,7 +224,7 @@ fun IngredientCard(ingredient: Ingredient) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(12.dp)
             )
             .border(
