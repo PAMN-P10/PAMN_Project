@@ -11,24 +11,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.pamn.letscook.domain.models.Ingredient
+import com.pamn.letscook.domain.models.PreparationStep
 import com.pamn.letscook.domain.models.Recipe
-
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun RecipeDetailScreen(
     recipe: Recipe,
@@ -54,7 +60,7 @@ fun RecipeDetailScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Imagen Circular Superior
+            // Imagen y detalles básicos...
             recipe.mainImage?.let {
                 AsyncImage(
                     model = it.url,
@@ -69,13 +75,14 @@ fun RecipeDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Título y Descripción
             Text(
                 text = recipe.title,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = recipe.description,
                 style = MaterialTheme.typography.bodyMedium,
@@ -84,8 +91,10 @@ fun RecipeDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Contenedor para Ingredientes y Pasos
-            Box(
+            // Contenedor principal
+            var selectedTab by remember { mutableStateOf(0) }
+
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
@@ -99,39 +108,38 @@ fun RecipeDetailScreen(
                     )
                     .padding(16.dp)
             ) {
-                Column {
-                    // Barra de Pestañas
-                    var selectedTab by remember { mutableStateOf(0) }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TabButton(
-                            text = "Ingredients",
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 }
+                // Tabs
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            shape = RoundedCornerShape(16.dp)
                         )
-                        TabButton(
-                            text = "Steps",
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 }
-                        )
-                    }
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TabButton(
+                        text = "Ingredients",
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 }
+                    )
+                    TabButton(
+                        text = "Steps",
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 }
+                    )
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    // Contenido Dinámico
-                    if (selectedTab == 0) {
-                        // Control de Porciones
+                when (selectedTab) {
+                    0 -> {
+                        // Ingredients content...
                         var servings by remember { mutableStateOf(recipe.servings) }
                         var adjustedRecipe by remember { mutableStateOf(recipe) }
 
+                        // Portion controls and ingredients list...
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
@@ -170,14 +178,110 @@ fun RecipeDetailScreen(
                                 IngredientCard(ingredient = ingredient)
                             }
                         }
-                    } else {
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    }
+                    1 -> {
+                        // Steps content
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             items(recipe.steps) { step ->
-                                Text(
-                                    text = "${step.stepNumber}. ${step.description}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(8.dp)
-                                )
+                                var isTimerRunning by remember { mutableStateOf(false) }
+                                var remainingTime by remember { mutableStateOf(step.estimatedTime.totalDuration) }
+                                var isCompleted by remember { mutableStateOf(false) }
+
+                                LaunchedEffect(isTimerRunning) {
+                                    if (isTimerRunning) {
+                                        while (remainingTime > 0) {
+                                            delay(1000L)
+                                            remainingTime -= 1
+                                        }
+                                        isTimerRunning = false
+                                        isCompleted = true
+                                    }
+                                }
+
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "Step ${step.stepNumber}",
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                if (isCompleted) {
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Icon(
+                                                        Icons.Default.Check,
+                                                        contentDescription = "Completed",
+                                                        tint = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                            }
+
+                                            if (step.requiresTimer && !isCompleted) {
+                                                Row(
+                                                    modifier = Modifier.clickable {
+                                                        if (!isTimerRunning) {
+                                                            isTimerRunning = true
+                                                            remainingTime = step.estimatedTime.totalDuration
+                                                        }
+                                                    },
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.PlayArrow,
+                                                        contentDescription = "Start Timer",
+                                                        tint = MaterialTheme.colorScheme.primary
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = "${step.estimatedTime.totalDuration / 60} min",
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Text(
+                                            text = step.description,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            textDecoration = if (isCompleted)
+                                                TextDecoration.LineThrough
+                                            else
+                                                TextDecoration.None
+                                        )
+
+                                        if (isTimerRunning) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            LinearProgressIndicator(
+                                                progress = remainingTime.toFloat() / step.estimatedTime.totalDuration.toFloat(),
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+                                            Text(
+                                                text = "${remainingTime / 60} min ${remainingTime % 60} sec remaining",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                textAlign = TextAlign.End
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -257,6 +361,71 @@ fun IngredientCard(ingredient: Ingredient) {
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.align(Alignment.CenterVertically)
         )
+    }
+}
+
+// Tarjeta de Pasos
+@Composable
+fun StepsList(steps: List<PreparationStep>) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(
+            items = steps,
+            key = { step -> step.stepNumber } // Usar stepNumber como key única
+        ) { step ->
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // Step Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Step ${step.stepNumber}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        if (step.requiresTimer) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = "Timer",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${step.estimatedTime.totalDuration / 60} min",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Step Description
+                    Text(
+                        text = step.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
     }
 }
 
