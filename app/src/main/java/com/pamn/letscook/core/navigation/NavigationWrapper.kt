@@ -18,7 +18,7 @@ import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.domain.usecases.IngredientInitializer
 import com.pamn.letscook.presentation.components.IngredientListScreen
-import com.pamn.letscook.presentation.components.RecipeDetailScreen
+import com.pamn.letscook.presentation.screens.RecipeDetailScreen
 import com.pamn.letscook.presentation.screens.PopularRecipesScreen
 import com.pamn.letscook.presentation.screens.InitialScreen
 import com.pamn.letscook.presentation.screens.HomeScreen
@@ -45,14 +45,22 @@ fun NavigationWrapper(
     val recipeList = "RecipeList"
 
     // Instanciar la ViewModelFactory
-    val factory = RecipeViewModelFactory(
+    val recipeFactory = RecipeViewModelFactory(
         recipeRepository = recipeRepository,
         recipeInitializer = recipeInitializer
     )
 
     // Crear la instancia del ViewModel utilizando la fábrica
-    val recipeViewModel: RecipeViewModel = viewModel(factory = factory)
+    val recipeViewModel: RecipeViewModel = viewModel(factory = recipeFactory)
 
+    // Instanciar la ViewModelFactory
+    val ingredientFactory = IngredientViewModelFactory(
+        ingredientRepository = ingredientRepository,
+        ingredientInitializer = ingredientInitializer
+    )
+
+    // Crear la instancia del ViewModel utilizando la fábrica
+    val ingredientViewModel: IngredientViewModel = viewModel(factory = ingredientFactory)
 
     NavHost(navController = navHostController, startDestination = initial){
 
@@ -77,36 +85,19 @@ fun NavigationWrapper(
         */
 
         composable(route = home) {
-            // Instanciar la ViewModelFactory
-            val factory = IngredientViewModelFactory(
-                ingredientRepository = ingredientRepository,
-                ingredientInitializer = ingredientInitializer
-            )
-
-            // Crear la instancia del ViewModel utilizando la fábrica
-            val ingredientViewModel: IngredientViewModel = viewModel(factory = factory)
-
             HomeScreen(viewModel = ingredientViewModel, repository = IngredientRepository(
                 FirebaseFirestore.getInstance())
 
             )
         }
         composable(route = ingredientRow) {
-            // Instanciar la ViewModelFactory
-            val factory = IngredientViewModelFactory(
-                ingredientRepository = ingredientRepository,
-                ingredientInitializer = ingredientInitializer
-            )
-
-            // Crear la instancia del ViewModel utilizando la fábrica
-            val ingredientViewModel: IngredientViewModel = viewModel(factory = factory)
 
             IngredientListScreen(viewModel = ingredientViewModel)
         }
 
         composable(route = recipeList) {
 
-            PopularRecipesScreen(recipeViewModel = recipeViewModel, navController = navHostController)
+            PopularRecipesScreen(recipeViewModel = recipeViewModel, ingredientViewModel = ingredientViewModel, navController = navHostController)
         }
 
         /**

@@ -112,6 +112,17 @@ class IngredientViewModel(
         }
     }
 
+    private val _selectedIngredients = MutableStateFlow<List<String>>(emptyList())
+    val selectedIngredients: StateFlow<List<String>> get() = _selectedIngredients
+
+    fun toggleIngredientSelection(ingredientName: String) {
+        _selectedIngredients.value = if (_selectedIngredients.value.contains(ingredientName)) {
+            _selectedIngredients.value - ingredientName
+        } else {
+            _selectedIngredients.value + ingredientName
+        }
+    }
+
     // Función para manejar errores y actualizar el estado
     private fun handleIngredientError(error: Throwable) {
         when (error) {

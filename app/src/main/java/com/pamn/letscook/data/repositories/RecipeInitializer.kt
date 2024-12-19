@@ -11,6 +11,9 @@ import com.pamn.letscook.domain.models.User
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
+//  formato correcto para un enlace directo a un archivo en Google Drive
+//https://drive.google.com/uc?export=view&id=FILE_ID
+
 class RecipeInitializer(
     private val repository: RecipeRepository,
     private val userRepository: UserRepository,
@@ -394,7 +397,7 @@ class RecipeInitializer(
                 preparationTime = 20,
                 difficulty = DifficultyLevel.Beginner,
                 servings = 4,
-                mainImage = Image(label = "Classic Pancakes", url = "https://i.pinimg.com/736x/ac/ce/25/acce25f7721236fd720c3638e3f448f6.jpg", format = "jpg"),
+                mainImage = Image(label = "Classic Pancakes", url = "https://drive.google.com/uc?export=view&id=1wyMaohy3IX46hIHYGfCpNKiEkj0MDb2A", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Sweet")),
                 createdAt = LocalDateTime.now()

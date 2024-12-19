@@ -33,224 +33,32 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pamn.letscook.domain.models.DifficultyLevel
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
-
-/**
-@Composable
-fun RecipeListScreen(
-    recipeViewModel: RecipeViewModel
-) {
-    val recipes: State<List<Recipe>> = recipeViewModel.recipes
-    val isLoading: State<Boolean> = recipeViewModel.isLoading
-
-    val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White)
-            .padding(16.dp)
-    ) {
-        SearchBar(
-            searchQuery = searchQuery,
-            onSearchQueryChange = {
-                setSearchQuery(it)
-                recipeViewModel.filterRecipesByName(it)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (isLoading.value) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color(0xFF007bff))
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(recipes.value) { recipe ->
-                    RecipeCard(recipe = recipe)
-                }
-            }
-        }
-    }
-
-    FloatingActionButton(
-        onClick = { /* Navigate to favorites */ },
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(24.dp)
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_favorite),
-            contentDescription = "Favorites",
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-    }
-}
-
-@Composable
-fun SearchBar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(color = Color(0xFFf2f2f2))
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_search),
-            contentDescription = "Search",
-            tint = Color(0xFF666666),
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        TextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text(
-                    text = "Search recipes...",
-                    color = Color(0xFF666666),
-                    fontSize = 16.sp
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
-        )
-    }
-}
-
-@Composable
-fun RecipeCard(recipe: Recipe) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(color = Color.White)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(8.dp))
-    ) {
-        Column {
-            Image(
-                painter = painterResource(id = R.drawable.recipe_image),
-                contentDescription = "Recipe Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                Text(
-                    text = recipe.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_timer),
-                            contentDescription = "Prep Time",
-                            tint = Color(0xFF666666),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = "${recipe.preparationTime} min",
-                            color = Color(0xFF666666),
-                            fontSize = 14.sp
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { /* Toggle favorite */ }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = if (recipe.isFavorite) R.drawable.ic_favorite_filled else R.drawable.ic_favorite_outline),
-                            contentDescription = "Favorite",
-                            tint = if (recipe.isFavorite) Color.Red else Color(0xFF666666),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun FloatingActionButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier
-            .size(56.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(color = Color(0xFF007bff))
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_favorite),
-            contentDescription = "Favorites",
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-    }
-}
-        */
-
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pamn.letscook.domain.models.filters
 import com.pamn.letscook.presentation.components.FilterBar
+import com.pamn.letscook.presentation.components.IngredientBar
+import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopularRecipesScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
+    ingredientViewModel: IngredientViewModel = viewModel(),
     navController: NavController
 ) {
     // Trigger recipe initialization when the screen is first loaded
     LaunchedEffect(Unit) {
         recipeViewModel.initializeRecipes()
+        ingredientViewModel.initializeIngredients()
     }
 
     val recipes by recipeViewModel.recipes.collectAsState()
+    val ingredients by ingredientViewModel.ingredients.collectAsState()
+    val selectedIngredients by ingredientViewModel.selectedIngredients.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
 
@@ -271,7 +79,14 @@ fun PopularRecipesScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // Add FilterBar here
+                IngredientBar(
+                    ingredients = ingredients,
+                    selectedIngredients = selectedIngredients,
+                    onIngredientSelected = { ingredientViewModel.toggleIngredientSelection(it) }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 FilterBar(
                     filter = filters,
                     onShowFilters = {
@@ -383,7 +198,7 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
                 val imageUrl = recipe.mainImage?.url ?: recipe.ingredients.firstOrNull()?.image?.url
                 if (!imageUrl.isNullOrBlank()) {
                     AsyncImage(
-                        model = recipe.mainImage?.url,
+                        model = imageUrl,
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
