@@ -62,6 +62,11 @@ dependencies {
     implementation(libs.retrofit.gson)
 
     implementation(libs.coil.compose)
+    // Firebase Realtime Database
+    implementation("com.google.firebase:firebase-database-ktx")
+    // Para convertir imágenes a Base64 (esto no es necesario si ya usas BitmapFactory)
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")  // Esto es para el uso con la UI si usas alguna vista.
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

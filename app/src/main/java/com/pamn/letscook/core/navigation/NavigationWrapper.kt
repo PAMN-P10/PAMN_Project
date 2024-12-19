@@ -1,5 +1,6 @@
 package com.pamn.letscook.core.navigation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -27,6 +28,17 @@ import com.pamn.letscook.presentation.viewmodel.IngredientViewModelFactory
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModelFactory
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.pamn.letscook.presentation.screens.LoginScreen
+import com.pamn.letscook.presentation.screens.ProfileScreen
+import com.pamn.letscook.presentation.screens.RecipeForm1Screen
+import com.pamn.letscook.presentation.screens.RecipeForm2Screen
+import com.pamn.letscook.presentation.screens.SignUp1Screen
+import com.pamn.letscook.presentation.screens.SignUp2Screen
+import com.pamn.letscook.presentation.screens.TemHomeScreen
+import com.pamn.letscook.presentation.screens.WelcomeOptionsScreen
+import com.pamn.letscook.presentation.screens.WelcomeScreen
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModelFactory
 
@@ -66,6 +78,106 @@ fun NavigationWrapper(
     // Recipe Filter setup
     val recipeFilterViewModel: RecipeFilterViewModel = viewModel()
 
+    // Rutas de navegación centralizadas
+    NavHost(
+        navController = navHostController,
+        startDestination = "welcome_screen"//"RecipeList"//"welcome_screen" // Cambiado a la pantalla inicial del MainActivity
+    ) {
+        // Rutas originales de MainActivity
+        composable("welcome_screen") {
+            WelcomeScreen(navController = navHostController)
+        }
+        composable("welcome_options_screen") {
+            WelcomeOptionsScreen(navController = navHostController)
+        }
+        composable("login_screen") {
+            LoginScreen(navController = navHostController)
+        }
+        composable("signup1_screen") {
+            val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
+            SignUp1Screen(navController = navHostController, userData.value)
+        }
+        composable("signup2_screen") {
+            val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
+            SignUp2Screen(navController = navHostController, userData.value)
+        }
+        composable("tem_home_screen") {
+            TemHomeScreen(navController = navHostController)
+        }
+        composable("profile_screen") {
+            ProfileScreen(navController = navHostController)
+        }
+        composable("recipeform1_screen") {
+            RecipeForm1Screen(navController = navHostController, recipeViewModel = recipeViewModel)
+        }
+        composable(
+            "recipeform2_screen/{title}/{description}/{imageUri}/{ingredients}",
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType },
+                navArgument("description") { type = NavType.StringType },
+                navArgument("imageUri") { type = NavType.StringType },
+                navArgument("ingredients") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val title = Uri.decode(backStackEntry.arguments?.getString("title") ?: "")
+            val description = Uri.decode(backStackEntry.arguments?.getString("description") ?: "")
+            val imageUri = backStackEntry.arguments?.getString("imageUri")?.let { Uri.parse(Uri.decode(it)) }
+            val ingredientsString = Uri.decode(backStackEntry.arguments?.getString("ingredients") ?: "")
+            val ingredients = ingredientsString.split(";")
+
+            RecipeForm2Screen(
+                navController = navHostController,
+                title = title,
+                description = description,
+                imageUri = imageUri,
+                ingredients = ingredients
+            )
+        }
+
+        // Rutas originales de NavigationWrapper
+        composable(route = "InitialScreen") {
+            InitialScreen(
+                navigateToHome = { navHostController.navigate(route = "recipeList") }
+            )
+        }
+        composable(route = "HomeScreen") {
+            HomeScreen(
+                viewModel = ingredientViewModel,
+                repository = IngredientRepository(FirebaseFirestore.getInstance())
+            )
+        }
+        composable(route = "IngredientRow") {
+            IngredientListScreen(viewModel = ingredientViewModel)
+        }
+        composable(route = "RecipeList") {
+            PopularRecipesScreen(
+                recipeViewModel = recipeViewModel,
+                ingredientViewModel = ingredientViewModel,
+                recipeFilterViewModel = recipeFilterViewModel,
+                navController = navHostController
+            )
+        }
+        composable(route = "RecipeDetail/{recipeTitle}") { backStackEntry ->
+            val recipeTitle = backStackEntry.arguments?.getString("recipeTitle") ?: return@composable
+            val recipeState = remember { mutableStateOf<Recipe?>(null) }
+            val isLoading = remember { mutableStateOf(true) }
+
+            LaunchedEffect(recipeTitle) {
+                val recipe = recipeViewModel.loadRecipeByTitleFromRepository(recipeTitle)
+                recipeState.value = recipe
+                isLoading.value = false
+            }
+
+            if (isLoading.value) {
+                CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+            } else if (recipeState.value != null) {
+                RecipeDetailScreen(recipe = recipeState.value!!, onBack = { navHostController.popBackStack() })
+            } else {
+                Text("Recipe not found", modifier = Modifier.fillMaxSize())
+            }
+        }
+    }
+    /**
     NavHost(navController = navHostController, startDestination = initial){
 
         // Definición explícita: la ruta es una string
@@ -152,5 +264,6 @@ fun NavigationWrapper(
 
 
     }
+    */
 
 }

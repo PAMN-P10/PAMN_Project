@@ -47,6 +47,7 @@ import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.pamn.letscook.presentation.components.FooterNavigation
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
 
 
@@ -89,6 +90,14 @@ fun PopularRecipesScreen(
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh Recipes")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            FooterNavigation(
+                onHeartClick = {  navController.navigate("tem_home_screen") },
+                onAddClick = { navController.navigate("recipeform1_screen") },
+                onProfileClick = { navController.navigate("profile_screen") },
+                modifier = Modifier.navigationBarsPadding() // Respeta la barra de navegación del sistema
             )
         },
         content = { padding ->

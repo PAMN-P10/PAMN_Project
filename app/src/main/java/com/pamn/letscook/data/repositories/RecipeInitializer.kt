@@ -139,7 +139,7 @@ class RecipeInitializer(
                 preparationTime = 50,
                 difficulty = DifficultyLevel.Intermediate,
                 servings = 4,
-                mainImage = Image(label = "Classic Spaghetti Bolognese",url = "https://i.pinimg.com/736x/e3/b1/0e/e3b10e548f91c57a891f88eacc3e0eec.jpg", format = "jpg"),
+                mainImage = Image(label = "Classic Spaghetti Bolognese",url = "https://img.freepik.com/free-photo/spaghetti-saute-gray-plate-with-tomatoes-basil_1150-25429.jpg?ga=GA1.1.1446863664.1727893023&semt=ais_hybrid", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Savory"),
                     FilterLabels(name = "Gluten-free")),
@@ -222,7 +222,7 @@ class RecipeInitializer(
                 preparationTime = 35,
                 difficulty = DifficultyLevel.Beginner,
                 servings = 2,
-                mainImage = Image(label = "Vegetarian Quinoa Salad", url = "https://i.pinimg.com/736x/88/fa/8d/88fa8debbcb699083d442dadfbf676f9.jpg", format = "jpg"),
+                mainImage = Image(label = "Vegetarian Quinoa Salad", url = "https://img.freepik.com/free-photo/top-view-salad-seeds-sesame-seeds-flax-sunflower-seeds-with-tomatoes-basil_141793-4114.jpg?ga=GA1.1.1446863664.1727893023&semt=ais_hybrid", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Organic"),
                     FilterLabels(name = "Gluten-free"),
@@ -276,7 +276,7 @@ class RecipeInitializer(
                 preparationTime = 35,
                 difficulty = DifficultyLevel.Beginner,
                 servings = 4,
-                mainImage = Image(label = "Vegan Chocolate Avocado Mousse", url = "https://i.pinimg.com/736x/f7/2b/21/f72b2162993fbca3438e51989df20f2b.jpg", format = "jpg"),
+                mainImage = Image(label = "Vegan Chocolate Avocado Mousse", url = "https://img.freepik.com/free-photo/delicious-chocolate-mousse-panna-cotta-with-blueberries-blueberries-dark-fabric-background-vertical_127032-3133.jpg?ga=GA1.1.1446863664.1727893023&semt=ais_hybrid", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Dairy-free"),
                     FilterLabels(name = "Sweet")),
@@ -338,7 +338,7 @@ class RecipeInitializer(
                 preparationTime = 50,
                 difficulty = DifficultyLevel.Intermediate,
                 servings = 2,
-                mainImage = Image(label = "Grilled Lemon Herb Chicken", url = "https://i.pinimg.com/736x/16/14/33/161433d62e075969a72cd8ae07d40da5.jpg", format = "jpg"),
+                mainImage = Image(label = "Grilled Lemon Herb Chicken", url = "https://img.freepik.com/free-photo/side-view-fried-fish-with-knife-fork_176474-3084.jpg?ga=GA1.1.1446863664.1727893023&semt=ais_hybrid", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Savory"),
                     FilterLabels(name = "Gluten-free")),
@@ -397,7 +397,7 @@ class RecipeInitializer(
                 preparationTime = 20,
                 difficulty = DifficultyLevel.Beginner,
                 servings = 4,
-                mainImage = Image(label = "Classic Pancakes", url = "https://drive.google.com/uc?export=view&id=1wyMaohy3IX46hIHYGfCpNKiEkj0MDb2A", format = "jpg"),
+                mainImage = Image(label = "Classic Pancakes", url = "https://img.freepik.com/free-photo/delicious-pancakes-with-fruit-honey_144627-41446.jpg?ga=GA1.1.1446863664.1727893023&semt=ais_hybrid", format = "jpg"),
                 appliedFilters = listOf(
                     FilterLabels(name = "Sweet")),
                 createdAt = LocalDateTime.now()
