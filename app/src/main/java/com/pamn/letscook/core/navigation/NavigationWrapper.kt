@@ -78,6 +78,8 @@ fun NavigationWrapper(
     // Recipe Filter setup
     val recipeFilterViewModel: RecipeFilterViewModel = viewModel()
 
+    val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
+
     // Rutas de navegación centralizadas
     NavHost(
         navController = navHostController,
@@ -94,11 +96,9 @@ fun NavigationWrapper(
             LoginScreen(navController = navHostController)
         }
         composable("signup1_screen") {
-            val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
             SignUp1Screen(navController = navHostController, userData.value)
         }
         composable("signup2_screen") {
-            val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
             SignUp2Screen(navController = navHostController, userData.value)
         }
         composable("tem_home_screen") {
