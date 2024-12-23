@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.pamn.letscook.domain.models.Recipe
-import com.pamn.letscook.ui.theme.LetsCookTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

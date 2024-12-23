@@ -25,16 +25,4 @@ data class User(
         favoriteRecipes.remove(recipe.title)
     }
 
-    //pasarlos a casos de uso
-    /**
-    fun updateProfile(
-        newUsername: String? = null,
-        newEmail: String? = null,
-        newProfileImage: String? = null
-    ) {
-        newUsername?.let { username = it }
-        newEmail?.let { email = it }
-        newProfileImage?.let { profileImageUrl = it }
-    }
-    */
 }

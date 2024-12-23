@@ -12,7 +12,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
-import com.google.firebase.firestore.FirebaseFirestore
 import com.pamn.letscook.data.repositories.IngredientRepository
 import com.pamn.letscook.data.repositories.RecipeInitializer
 import com.pamn.letscook.data.repositories.RecipeRepository
@@ -21,8 +20,6 @@ import com.pamn.letscook.domain.usecases.IngredientInitializer
 import com.pamn.letscook.presentation.components.IngredientListScreen
 import com.pamn.letscook.presentation.screens.RecipeDetailScreen
 import com.pamn.letscook.presentation.screens.PopularRecipesScreen
-import com.pamn.letscook.presentation.screens.InitialScreen
-import com.pamn.letscook.presentation.screens.HomeScreen
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 import com.pamn.letscook.presentation.viewmodel.IngredientViewModelFactory
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
@@ -40,7 +37,6 @@ import com.pamn.letscook.presentation.screens.SignUp2Screen
 import com.pamn.letscook.presentation.screens.WelcomeOptionsScreen
 import com.pamn.letscook.presentation.screens.WelcomeScreen
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
-import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModelFactory
 import com.pamn.letscook.presentation.viewmodel.UserViewModel
 
 @Composable
@@ -52,7 +48,6 @@ fun NavigationWrapper(
 ) {
     val navHostController = rememberNavController()
 
-    // Instanciar la ViewModelFactory
     val recipeFactory = RecipeViewModelFactory(
         recipeRepository = recipeRepository,
         recipeInitializer = recipeInitializer
@@ -67,7 +62,6 @@ fun NavigationWrapper(
 
     val recipeFilterViewModel: RecipeFilterViewModel = viewModel()
 
-    // Crear la instancia del UserViewModel
     val userViewModel: UserViewModel = viewModel()
 
     val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
@@ -95,7 +89,7 @@ fun NavigationWrapper(
         composable("fav_screen") {
             FavScreen(
                 //recipeViewModel = recipeViewModel,
-                userViewModel = userViewModel, // Asegúrate de agregar esto en la pantalla
+                userViewModel = userViewModel,
                 recipeViewModel = recipeViewModel,
                 navController = navHostController
             )
@@ -127,18 +121,6 @@ fun NavigationWrapper(
                 description = description,
                 imageUri = imageUri,
                 ingredients = ingredients
-            )
-        }
-
-        composable(route = "InitialScreen") {
-            InitialScreen(
-                navigateToHome = { navHostController.navigate(route = "recipeList") }
-            )
-        }
-        composable(route = "HomeScreen") {
-            HomeScreen(
-                viewModel = ingredientViewModel,
-                repository = IngredientRepository(FirebaseFirestore.getInstance())
             )
         }
         composable(route = "IngredientRow") {
@@ -174,92 +156,3 @@ fun NavigationWrapper(
         }
     }
 }
-
-    /**
-    NavHost(navController = navHostController, startDestination = initial){
-
-        // Definición explícita: la ruta es una string
-        // Se maneja como una tabla hash de rutas (strings) dentro del sistema de navegación de Jetpack Compose.
-        //  no hay que realizar conversiones o inferencias. Las rutas como cadenas son fáciles de parsear.
-        composable(route = initial){
-            InitialScreen(
-                navigateToHome = { navHostController.navigate(route = recipeList)}
-            )
-        }
-
-        // Uso de tipo genérico: las rutas sin una clase u objeto
-        // Requiere una capa adicional para mapear los tipos genéricos a cadenas o claves unicas
-        // Costo adicional de procesamiento  debido a la necesidad de almacenar meta-información del tipo (erasure) y realizar conversiones dinámicas.
-        /**
-         composable<initial>{
-            InitialScreen{
-                navHostController.navigate(Home)
-            }
-        }
-        */
-
-        composable(route = home) {
-            HomeScreen(
-                viewModel = ingredientViewModel,
-                repository = IngredientRepository(
-                FirebaseFirestore.getInstance())
-
-            )
-        }
-        composable(route = ingredientRow) {
-
-            IngredientListScreen(viewModel = ingredientViewModel)
-        }
-
-        composable(route = recipeList) {
-
-            PopularRecipesScreen(
-                recipeViewModel = recipeViewModel,
-                ingredientViewModel = ingredientViewModel,
-                recipeFilterViewModel = recipeFilterViewModel,
-                navController = navHostController
-            )
-        }
-
-        /**
-        composable("RecipeDetail/{recipeTitle}") { backStackEntry ->
-            val recipeTitle = backStackEntry.arguments?.getString("recipeTitle") ?: return@composable
-            val recipe = recipeViewModel.recipes.value.find { it.title == recipeTitle }
-            if (recipe != null) {
-                RecipeDetailScreen(recipe = recipe, onBack = { navHostController.popBackStack() })
-            }
-        }
-
-        composable(route = "RecipeDetail/{recipeTitle}") { backStackEntry ->
-            val recipeTitle = backStackEntry.arguments?.getString("recipeTitle") ?: return@composable
-            val recipe = recipeViewModel.loadRecipeByTitle(recipeTitle)
-            recipe?.let {
-                RecipeDetailScreen(recipe = it, onBack = { navHostController.popBackStack() })
-            }
-        }
-         */
-
-        composable(route = "RecipeDetail/{recipeTitle}") { backStackEntry ->
-            val recipeTitle = backStackEntry.arguments?.getString("recipeTitle") ?: return@composable
-            val recipeState = remember { mutableStateOf<Recipe?>(null) }
-            val isLoading = remember { mutableStateOf(true) }
-
-            LaunchedEffect(recipeTitle) {
-                val recipe = recipeViewModel.loadRecipeByTitleFromRepository(recipeTitle)
-                recipeState.value = recipe
-                isLoading.value = false
-            }
-
-            if (isLoading.value) {
-                CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-            } else if (recipeState.value != null) {
-                RecipeDetailScreen(recipe = recipeState.value!!, onBack = { navHostController.popBackStack() })
-            } else {
-                Text("Recipe not found", modifier = Modifier.fillMaxSize())
-            }
-        }
-
-
-
-    }
-    */

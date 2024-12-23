@@ -8,8 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-// import androidx.navigation.NavHostController
-// import androidx.navigation.compose.rememberNavController
 import com.pamn.letscook.core.navigation.NavigationWrapper
 import com.pamn.letscook.data.repositories.IngredientRepository
 import com.pamn.letscook.data.repositories.RecipeInitializer
@@ -81,7 +79,6 @@ class MainActivity : ComponentActivity() {
                 // Crear la instancia del ViewModel utilizando la fábrica
                 val recipeViewModel: RecipeViewModel = viewModel(factory = recipeFactory )
 
-                // Call initializeIngredients() when the app starts
                 // Llamadas para inicializar ingredientes y recetas al iniciar la app
                 LaunchedEffect(Unit) {
                     ingredientViewModel.initializeIngredients()

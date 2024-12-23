@@ -1,7 +1,6 @@
 package com.pamn.letscook.data.repositories
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.pamn.letscook.data.repositories.IngredientRepository
 import com.pamn.letscook.domain.models.DifficultyLevel
 import com.pamn.letscook.domain.models.Image
 import com.pamn.letscook.domain.models.Ingredient
@@ -9,7 +8,6 @@ import com.pamn.letscook.domain.models.IngredientType
 import com.pamn.letscook.domain.models.PreparationStep
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.domain.models.Timer
-import com.pamn.letscook.domain.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.tasks.await
@@ -21,7 +19,6 @@ class RecipeRepository(
     private val userRepository: UserRepository,
     private val ingredientRepository: IngredientRepository
 ) {
-    // Error handling similar to IngredientRepository
     sealed class RecipeError : Exception() {
         object NetworkError : RecipeError() {
             private fun readResolve(): Any = NetworkError
@@ -90,7 +87,7 @@ class RecipeRepository(
 
                 try {
                     firestore.collection("recipes")
-                        .document(recipe.title) // Using title as document ID, might want to use a unique identifier
+                        .document(recipe.title)
                         .set(recipeMap)
                         .await()
                     Unit
@@ -114,7 +111,6 @@ class RecipeRepository(
                     if (result.isFailure) {
                         throw result.exceptionOrNull() ?: RecipeError.DatabaseError
                     }
-
                     //batch.set(recipeRef, recipeMap)
                 }
 
@@ -125,61 +121,6 @@ class RecipeRepository(
             }
         }
     }
-
-    /**
-     * suspend fun saveRecipes(recipes: List<Recipe>): Result<Unit> {
-     *     return withContext(Dispatchers.IO) {
-     *         runCatching {
-     *             val batch = firestore.batch()
-     *
-     *             recipes.forEach { recipe ->
-     *                 val recipeRef = firestore.collection("recipes").document(recipe.id ?: recipe.title)
-     *                 val recipeMap = mapOf(
-     *                     "title" to recipe.title,
-     *                     "description" to recipe.description,
-     *                     "author" to recipe.author.userId,
-     *                     "ingredients" to recipe.ingredients.map { it.name },
-     *                     "steps" to recipe.steps.map {
-     *                         mapOf(
-     *                             "stepNumber" to it.stepNumber,
-     *                             "description" to it.description,
-     *                             "estimatedTime" to mapOf(
-     *                                 "hours" to it.estimatedTime.hours,
-     *                                 "minutes" to it.estimatedTime.minutes
-     *                             ),
-     *                             "requiresTimer" to it.requiresTimer,
-     *                             "imageUrl" to it.imageUrl
-     *                         )
-     *                     },
-     *                     "preparationTime" to recipe.preparationTime,
-     *                     "difficulty" to recipe.difficulty.name,
-     *                     "mainImage" to (recipe.mainImage?.let {
-     *                         mapOf(
-     *                             "label" to it.label,
-     *                             "url" to it.url,
-     *                             "format" to it.format,
-     *                             "width" to it.width,
-     *                             "height" to it.height
-     *                         )
-     *                     } ?: emptyMap()),
-     *                     "servings" to recipe.servings,
-     *                     "appliedFilters" to recipe.appliedFilters.map { it.name },
-     *                     "createdAt" to recipe.createdAt.toString()
-     *                 )
-     *
-     *                 batch.set(recipeRef, recipeMap)
-     *             }
-     *
-     *             // Ejecutar el batch para guardar todas las recetas
-     *             batch.commit().await()
-     *         }.onFailure { error ->
-     *             println("Error saving recipes: ${error.message}")
-     *         }
-     *     }
-     * }
-     *
-     */
-
 
     // Get all recipes
     suspend fun getAllRecipes(): Result<List<Recipe>> {
@@ -317,7 +258,7 @@ class RecipeRepository(
                             difficulty = DifficultyLevel.valueOf(
                                 documentSnapshot.getString("difficulty") ?: "MEDIUM"
                             ),
-                            mainImage = null, // Would need to parse image map
+                            mainImage = null,
                             servings = (documentSnapshot.get("servings") as? Number)?.toInt() ?: 4,
                             appliedFilters = emptyList(), // Would need to parse filters
                             createdAt = LocalDateTime.parse(documentSnapshot.getString("createdAt"))

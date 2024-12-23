@@ -3,17 +3,12 @@ package com.pamn.letscook.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.pamn_project.services.AuthService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.domain.models.User
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class UserViewModel : ViewModel() {
     private val _currentUser = MutableLiveData<User>()

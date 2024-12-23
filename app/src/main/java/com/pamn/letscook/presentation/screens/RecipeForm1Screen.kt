@@ -445,7 +445,6 @@ fun ImagePicker(
         }
     }
 
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

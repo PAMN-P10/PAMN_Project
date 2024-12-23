@@ -96,69 +96,6 @@ class IngredientRepository(
             println("Error al guardar múltiples ingredientes: ${error.message}")
         }
     }
-    /**
-    suspend fun saveIngredients(ingredients: List<Ingredient>): Result<Void> {
-        return runCatching {
-            withContext(Dispatchers.IO) {
-                // Validaciones previas
-                require(ingredients.isNotEmpty()) { "La lista de ingredientes no puede estar vacía" }
-
-                // Validar cada ingrediente antes de intentar guardar
-                ingredients.forEach { ingredient ->
-                    require(ingredient.name.isNotBlank()) { "El nombre del ingrediente no puede estar vacío" }
-                    require(ingredient.quantity >= 0) { "La cantidad no puede ser negativa" }
-                }
-
-                // Preparar el batch de escritura
-                val batch = firestore.batch()
-
-                println("Intentando guardar ingredientes...")
-                println("Ingredientes a guardar: $ingredients")
-
-                ingredients.forEach { ingredient ->
-                    val ingredientMap = mapOf(
-                        "name" to ingredient.name,
-                        "type" to ingredient.type.name,
-                        "quantity" to ingredient.quantity,
-                        "isAllergen" to ingredient.isAllergen,
-                        "image" to mapOf(
-                            "label" to ingredient.image.label,
-                            "url" to ingredient.image.url,
-                            "format" to ingredient.image.format,
-                            "width" to ingredient.image.width,
-                            "height" to ingredient.image.height
-                        )
-                    )
-
-                    val docRef = firestore.collection("ingredients")
-                        .document(ingredient.name)
-
-                    batch.set(docRef, ingredientMap)
-                }
-
-                try {
-                    // Intentar commitear el batch
-                    batch.commit().await()
-                } catch (e: Exception) {
-
-                    println("Error al guardar ingredientes: ${e.message}")
-                    // Si falla el commit, lanzar un error de base de datos
-                    throw IngredientError.DatabaseError
-                }
-            }
-        }.onFailure { error ->
-            // Logging de errores
-            when (error) {
-                is IngredientError.DatabaseError ->
-                    println("Error al guardar múltiples ingredientes en la base de datos")
-                is IllegalArgumentException ->
-                    println("Error de validación: ${error.message}")
-                else ->
-                    println("Error desconocido al guardar ingredientes: ${error.message}")
-            }
-        }
-    }
-    */
 
     // Función para leer todos los ingredientes
     suspend fun getAllIngredients(): Result<List<Ingredient>> {
@@ -227,7 +164,6 @@ class IngredientRepository(
     }
 
     // Función para leer un solo ingrediente por nombre (ID del documento)
-
     suspend fun getIngredientByName(name: String): Result<Ingredient> {
         return runCatching {
             withContext(Dispatchers.IO) {
@@ -282,4 +218,3 @@ class IngredientRepository(
         }
     }
 }
-

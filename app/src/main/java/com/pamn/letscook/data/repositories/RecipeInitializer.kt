@@ -402,10 +402,7 @@ class RecipeInitializer(
                     FilterLabels(name = "Sweet")),
                 createdAt = LocalDateTime.now()
             )
-
-
         )
-
 
         val saveResult = repository.saveRecipes(initialRecipes)
         saveResult.onSuccess {
