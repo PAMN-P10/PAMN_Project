@@ -9,23 +9,20 @@ data class User(
     var profileImage: Image? = null,
     //val dietaryPreferences: MutableList<String> = mutableListOf(),
     //Encapsuled: para cumplir con el principio de responsabilidad única
-    private val favoriteRecipes: MutableList<Recipe> = mutableListOf(),
-    private val userRecipes: MutableList<Recipe> = mutableListOf()
+    var favoriteRecipes: MutableList<String> = mutableListOf()
 ) {
     // Métodos encapsulan las listas para cumplir con el principio de responsabilidad única
     // Evitar accesos directos a las listas mutables
-    fun getFavoriteRecipes(): List<Recipe> = favoriteRecipes
-    fun getUserRecipes(): List<Recipe> = userRecipes
+    fun getFavoriteRecipesList(): List<String> = favoriteRecipes
 
     fun addFavoriteRecipe(recipe: Recipe) {
-        if (!favoriteRecipes.contains(recipe)) {
-            favoriteRecipes.add(recipe)
+        if (!favoriteRecipes.contains(recipe.title)) {
+            favoriteRecipes.add(recipe.title)
         }
-        //if (recipe !in favoriteRecipes) favoriteRecipes.add(recipe)
     }
 
     fun removeFavoriteRecipe(recipe: Recipe) {
-        favoriteRecipes.remove(recipe)
+        favoriteRecipes.remove(recipe.title)
     }
 
     //pasarlos a casos de uso

@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestore
 import com.pamn.letscook.data.repositories.RecipeInitializer
 import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.models.Ingredient
@@ -50,6 +51,55 @@ class RecipeViewModel(
 
     // Lista de ingredientes seleccionados (par nombre de ingrediente, cantidad y unidad)
     var selectedIngredients = mutableStateListOf<Triple<String, Double, String>>()
+
+    /*-------------------*/
+    private val firestore = FirebaseFirestore.getInstance()
+    // Suponiendo que tienes un método para el usuario logueado y almacenamiento
+    fun toggleFavorite(recipe: Recipe, userId: String) {
+        val updatedRecipe = recipe.copy(isFavorite = !recipe.isFavorite)
+        val updatedRecipes = _recipes.value.toMutableList()
+        val index = _recipes.value.indexOfFirst { it.title == recipe.title }
+
+        if (index != -1) {
+            updatedRecipes[index] = updatedRecipe
+            _recipes.value = updatedRecipes
+
+            // Actualizar Firestore
+            val favoriteDoc = firestore.collection("users")
+                .document(userId)
+                .collection("favorites")
+                .document(recipe.title)
+
+            if (updatedRecipe.isFavorite) {
+                favoriteDoc.set(updatedRecipe.toMap()) // Guarda el favorito
+            } else {
+                favoriteDoc.delete() // Elimina el favorito
+            }
+        }
+    }
+
+    private fun saveFavorites(favoriteRecipes: List<Recipe>) {
+        // Implementa la lógica para guardar favoritos
+    }
+    // Nueva función para cargar favoritos desde la base de datos
+    fun loadFavoritesFromFirestore(userId: String) {
+        firestore.collection("users")
+            .document(userId)
+            .collection("favorites")
+            .get()
+            .addOnSuccessListener { documents ->
+                val favoriteTitles = documents.mapNotNull { it.id }
+                _recipes.value = _recipes.value.map { recipe ->
+                    recipe.copy(isFavorite = favoriteTitles.contains(recipe.title))
+                }
+            }
+            .addOnFailureListener { exception ->
+                _errorMessage.value = "Failed to load favorites: ${exception.message}"
+            }
+    }
+
+
+    /*--------------------*/
 
     // Inicializar recetas si están vacías
     fun initializeRecipes() {

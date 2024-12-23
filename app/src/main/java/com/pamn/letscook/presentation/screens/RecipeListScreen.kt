@@ -10,46 +10,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pamn.letscook.domain.models.DifficultyLevel
-import com.pamn.letscook.domain.models.Recipe
-import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.pamn.letscook.domain.models.filters
+import com.pamn.letscook.domain.models.DifficultyLevel
+import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.presentation.components.FilterBar
 import com.pamn.letscook.presentation.components.IngredientBar
 import com.pamn.letscook.presentation.components.SearchBar
-import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.pamn.letscook.presentation.components.FooterNavigation
+import com.pamn.letscook.presentation.viewmodel.IngredientViewModel
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
-
+import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
+import com.pamn.letscook.presentation.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,15 +39,16 @@ fun PopularRecipesScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
     ingredientViewModel: IngredientViewModel = viewModel(),
     recipeFilterViewModel: RecipeFilterViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel(),
     navController: NavController,
-    ) {
+) {
     var searchQuery by remember { mutableStateOf("") }
     val filteredRecipes by recipeFilterViewModel.filteredRecipes.collectAsState()
 
-    // Trigger recipe initialization when the screen is first loaded
     LaunchedEffect(Unit) {
-        recipeViewModel.initializeRecipes()
-        ingredientViewModel.initializeIngredients()
+        userViewModel.currentUserId?.let { userId ->
+            recipeViewModel.loadFavoritesFromFirestore(userId)
+        }
     }
 
     val recipes by recipeViewModel.recipes.collectAsState()
@@ -74,12 +57,6 @@ fun PopularRecipesScreen(
     val filters by recipeFilterViewModel.filters.collectAsState()
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
-
-    // Filtrar recetas cada vez que cambien los filtros o las recetas
-    LaunchedEffect(filters, recipes) {
-        recipeFilterViewModel.updateFilters(filters, recipes)
-    }
-
 
     Scaffold(
         topBar = {
@@ -94,10 +71,10 @@ fun PopularRecipesScreen(
         },
         bottomBar = {
             FooterNavigation(
-                onHeartClick = {  navController.navigate("tem_home_screen") },
+                onHeartClick = { navController.navigate("fav_screen") },
                 onAddClick = { navController.navigate("recipeform1_screen") },
                 onProfileClick = { navController.navigate("profile_screen") },
-                modifier = Modifier.navigationBarsPadding() // Respeta la barra de navegación del sistema
+                modifier = Modifier.navigationBarsPadding()
             )
         },
         content = { padding ->
@@ -107,13 +84,13 @@ fun PopularRecipesScreen(
                     .padding(padding)
             ) {
                 SearchBar(
-                    searchText = searchQuery,  // Pass the string value directly
+                    searchText = searchQuery,
                     onSearchTextChange = { query ->
-                        searchQuery = query  // Update the state directly
+                        searchQuery = query
                         recipeViewModel.filterRecipesByName(query)
                     },
                     onSearchVoiceInput = { voiceQuery ->
-                        searchQuery = voiceQuery  // Update the state directly
+                        searchQuery = voiceQuery
                         recipeViewModel.filterRecipesByName(voiceQuery)
                     }
                 )
@@ -129,59 +106,31 @@ fun PopularRecipesScreen(
 
                 FilterBar(
                     filter = filters,
-                    onShowFilters = {
-                        // Mostrar un diálogo o manejar filtros adicionales
-                    },
+                    onShowFilters = {},
                     onFilterChange = {
                         recipeFilterViewModel.updateFilters(filters, recipes)
                     }
                 )
 
-                /**Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    when {
-                        isLoading -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                            )
-                        }
-                        errorMessage != null -> {
-                            Text(
-                                text = errorMessage ?: "An error occurred",
-                                color = Color.Red,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                        recipes.isNotEmpty() -> {
-                            RecipesList(recipes = recipes)
-                        }
-                        else -> {
-                            Text(
-                                text = "No recipes available",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    }
-                }*/
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
+                when {
+                    isLoading -> CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
-                } else if (errorMessage != null) {
-                    Text(
+                    errorMessage != null -> Text(
                         text = errorMessage ?: "An error occurred",
                         color = Color.Red,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
-                } else if (recipes.isNotEmpty()) {
-                    RecipesList(recipes = recipes) { recipeTitle ->
-                        navController.navigate("RecipeDetail/$recipeTitle")
-                    }
-                } else {
-                    Text(
+                    recipes.isNotEmpty() -> RecipesList(
+                        recipes = recipes,
+                        onRecipeClick = { recipeTitle -> navController.navigate("RecipeDetail/$recipeTitle") },
+                        onFavoriteClick = { recipe ->
+                            userViewModel.currentUserId?.let { userId ->
+                                recipeViewModel.toggleFavorite(recipe, userId)
+                            }
+                        }
+                    )
+                    else -> Text(
                         text = "No recipes available",
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -192,21 +141,32 @@ fun PopularRecipesScreen(
 }
 
 @Composable
-fun RecipesList(recipes: List<Recipe>, onRecipeClick: (String) -> Unit) {
+fun RecipesList(
+    recipes: List<Recipe>,
+    onRecipeClick: (String) -> Unit,
+    onFavoriteClick: (Recipe) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(recipes) { recipe ->
-            RecipeCard(recipe = recipe, onClick = { onRecipeClick(recipe.title) })
+            RecipeCard(
+                recipe = recipe,
+                onClick = { onRecipeClick(recipe.title) },
+                onFavoriteClick = onFavoriteClick
+            )
         }
     }
 }
 
-
 @Composable
-fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
+fun RecipeCard(
+    recipe: Recipe,
+    onClick: (String) -> Unit,
+    onFavoriteClick: (Recipe) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,38 +175,19 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            // Recipe image (with placeholder handling)
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(150.dp)
             ) {
-                /**
-                recipe.mainImage?.let { image ->
-                AsyncImage(
-                model = image.url,
-                contentDescription = recipe.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-                )
-                } ?: Image(
-                painter = painterResource(id = R.drawable.default_recipe_placeholder),
-                contentDescription = recipe.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-                )
-                 */
-                // Use a conditional image loading approach
                 val imageUrl = recipe.mainImage?.url ?: recipe.ingredients.firstOrNull()?.image?.url
                 if (!imageUrl.isNullOrBlank()) {
                     AsyncImage(
                         model = imageUrl,
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-
+                        modifier = Modifier.fillMaxSize()
                     )
-
                 } else {
                     Box(
                         modifier = Modifier
@@ -257,11 +198,8 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
                         Text("No Image", color = Color.Gray)
                     }
                 }
-
-
             }
 
-            // Recipe information
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -286,7 +224,6 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Preparation time
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
@@ -296,7 +233,6 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
                         Text("${recipe.preparationTime} min")
                     }
 
-                    // Difficulty level
                     Text(
                         text = recipe.difficulty.name,
                         style = MaterialTheme.typography.bodySmall,
@@ -307,11 +243,11 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
                         }
                     )
 
-                    // Favorite button (placeholder)
-                    IconButton(onClick = { /* Add to favorites */ }) {
+                    IconButton(onClick = { onFavoriteClick(recipe) }) {
                         Icon(
                             imageVector = Icons.Default.Favorite,
-                            contentDescription = "Favorite"
+                            contentDescription = "Favorite",
+                            tint = if (recipe.isFavorite) Color.Red else Color.Gray
                         )
                     }
                 }
@@ -319,4 +255,3 @@ fun RecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
         }
     }
 }
-

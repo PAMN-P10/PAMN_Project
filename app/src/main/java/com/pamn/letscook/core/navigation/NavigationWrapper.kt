@@ -30,62 +30,53 @@ import com.pamn.letscook.presentation.viewmodel.RecipeViewModelFactory
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.pamn.letscook.presentation.screens.FavScreen
 import com.pamn.letscook.presentation.screens.LoginScreen
 import com.pamn.letscook.presentation.screens.ProfileScreen
 import com.pamn.letscook.presentation.screens.RecipeForm1Screen
 import com.pamn.letscook.presentation.screens.RecipeForm2Screen
 import com.pamn.letscook.presentation.screens.SignUp1Screen
 import com.pamn.letscook.presentation.screens.SignUp2Screen
-import com.pamn.letscook.presentation.screens.TemHomeScreen
 import com.pamn.letscook.presentation.screens.WelcomeOptionsScreen
 import com.pamn.letscook.presentation.screens.WelcomeScreen
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModel
 import com.pamn.letscook.presentation.viewmodel.RecipeFilterViewModelFactory
+import com.pamn.letscook.presentation.viewmodel.UserViewModel
 
 @Composable
 fun NavigationWrapper(
-    // Pasados como dependencia
     ingredientRepository: IngredientRepository,
     ingredientInitializer: IngredientInitializer,
     recipeRepository: RecipeRepository,
     recipeInitializer: RecipeInitializer
-){
-    val navHostController = rememberNavController() // El objeto que gestiona la navegacion
-    // Advice for myself: Las constantes de ruta debería de centralizarse en un archivo separado cuando
-    val initial = "InitialScreen"
-    val home = "HomeScreen"
-    val ingredientRow = "IngredientRow"
-    val recipeList = "RecipeList"
+) {
+    val navHostController = rememberNavController()
 
     // Instanciar la ViewModelFactory
     val recipeFactory = RecipeViewModelFactory(
         recipeRepository = recipeRepository,
         recipeInitializer = recipeInitializer
     )
-
-    // Crear la instancia del ViewModel utilizando la fábrica
     val recipeViewModel: RecipeViewModel = viewModel(factory = recipeFactory)
 
-    // Instanciar la ViewModelFactory
     val ingredientFactory = IngredientViewModelFactory(
         ingredientRepository = ingredientRepository,
         ingredientInitializer = ingredientInitializer
     )
-
-    // Crear la instancia del ViewModel utilizando la fábrica
     val ingredientViewModel: IngredientViewModel = viewModel(factory = ingredientFactory)
 
-    // Recipe Filter setup
     val recipeFilterViewModel: RecipeFilterViewModel = viewModel()
+
+    // Crear la instancia del UserViewModel
+    val userViewModel: UserViewModel = viewModel()
 
     val userData = remember { mutableStateOf(mutableMapOf<String, String>()) }
 
-    // Rutas de navegación centralizadas
     NavHost(
         navController = navHostController,
-        startDestination = "welcome_screen"//"RecipeList"//"welcome_screen" // Cambiado a la pantalla inicial del MainActivity
+       // startDestination = "welcome_screen"
+        startDestination = if (userViewModel.currentUser.value != null) "fav_screen" else "welcome_screen"
     ) {
-        // Rutas originales de MainActivity
         composable("welcome_screen") {
             WelcomeScreen(navController = navHostController)
         }
@@ -101,8 +92,13 @@ fun NavigationWrapper(
         composable("signup2_screen") {
             SignUp2Screen(navController = navHostController, userData.value)
         }
-        composable("tem_home_screen") {
-            TemHomeScreen(navController = navHostController)
+        composable("fav_screen") {
+            FavScreen(
+                //recipeViewModel = recipeViewModel,
+                userViewModel = userViewModel, // Asegúrate de agregar esto en la pantalla
+                recipeViewModel = recipeViewModel,
+                navController = navHostController
+            )
         }
         composable("profile_screen") {
             ProfileScreen(navController = navHostController)
@@ -134,7 +130,6 @@ fun NavigationWrapper(
             )
         }
 
-        // Rutas originales de NavigationWrapper
         composable(route = "InitialScreen") {
             InitialScreen(
                 navigateToHome = { navHostController.navigate(route = "recipeList") }
@@ -154,6 +149,7 @@ fun NavigationWrapper(
                 recipeViewModel = recipeViewModel,
                 ingredientViewModel = ingredientViewModel,
                 recipeFilterViewModel = recipeFilterViewModel,
+                userViewModel = userViewModel,
                 navController = navHostController
             )
         }
@@ -177,6 +173,8 @@ fun NavigationWrapper(
             }
         }
     }
+}
+
     /**
     NavHost(navController = navHostController, startDestination = initial){
 
@@ -265,5 +263,3 @@ fun NavigationWrapper(
 
     }
     */
-
-}
