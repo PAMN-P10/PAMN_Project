@@ -19,7 +19,7 @@ class RecipeInitializer(
     private val userRepository: UserRepository,
     private val ingredientRepository: IngredientRepository
 ) {
-    suspend fun initializeRecipesIfEmpty() {
+    /*suspend fun initializeRecipesIfEmpty() {
         println("Initializing recipes...")
 
         val result = repository.getAllRecipes()
@@ -54,7 +54,7 @@ class RecipeInitializer(
         userRepository.saveUser(defaultUser)
 
         // Fetch ingredients from the database
-        val initialRecipes = listOf(
+        /*val initialRecipes = listOf(
             Recipe(
                 title = "Classic Spaghetti Bolognese",
                 description = "A hearty Italian pasta dish with rich meat sauce",
@@ -404,7 +404,7 @@ class RecipeInitializer(
             )
 
 
-        )
+        )*/
 
 
         val saveResult = repository.saveRecipes(initialRecipes)
@@ -413,5 +413,5 @@ class RecipeInitializer(
         }.onFailure { error ->
             println("Error saving initial recipes: ${error.message}")
         }
-    }
+    }*/
 }

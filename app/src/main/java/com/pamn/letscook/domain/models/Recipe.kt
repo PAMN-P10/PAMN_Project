@@ -5,20 +5,20 @@ import java.time.LocalDateTime
 data class Recipe(
     val title: String,
     val description: String,
-    val author: User,
+    val author: User?,
+    val difficulty: String,  // Cambiado para representar la dificultad como un String (Beginner, Intermediate, etc.)
+    val preparationTime: String,  // Cambiado para manejar tiempo en formato string
+    val allergens: List<String> = emptyList(), // Listado de alergenos
     val ingredients: List<Ingredient>,
     val steps: List<PreparationStep>,
-    val preparationTime: Int,
-    val difficulty: DifficultyLevel,
-    val mainImage: Image? = null, // no es image de android media sino el objeto Image creado
+    val mainImage: Image? = null, // Imagen principal de la receta
     val servings: Int = 4,
-    val appliedFilters: List<FilterLabels> = emptyList(), // filtros para la busqueda
-    val createdAt: LocalDateTime = LocalDateTime.now(), //fecha de creación
+    val appliedFilters: List<FilterLabels> = emptyList(),
+    val createdAt: LocalDateTime = LocalDateTime.now(),
     val isFavorite: Boolean = false
-
 ) {
     fun adjustServings(newServings: Int): Recipe {
-        // Recalculate ingredient quantities based on new servings
+        // Recalcular las cantidades de los ingredientes con respecto a las porciones
         val adjustedIngredients = ingredients.map { ingredient ->
             ingredient.copy(
                 quantity = ingredient.quantity * (newServings.toDouble() / servings)
@@ -39,32 +39,15 @@ data class Recipe(
         return mapOf(
             "title" to title,
             "description" to description,
-            "author" to mapOf(
-                "name" to author.username,
-                "email" to author.email, // Ajusta según las propiedades de User
-                "profileImage" to author.profileImage
-            ),
-            "ingredients" to ingredients.map { ingredient ->
-                mapOf(
-                    "name" to ingredient.name,
-                    "quantity" to ingredient.quantity,
-                    "unit" to ingredient.unit
-                )
-            },
-            "steps" to steps.map { step ->
-                mapOf(
-                    "order" to step.stepNumber,
-                    "description" to step.description
-                )
-            },
+            "difficulty" to difficulty,
             "preparationTime" to preparationTime,
-            "difficulty" to difficulty.name,
-            "mainImage" to mainImage?.url, // Si Image tiene una URL o similar
+            "allergens" to allergens,
+            "ingredients" to ingredients.map { it.toMap() },  // Mapea los ingredientes
+            "steps" to steps.map { it.toMap() },  // Mapea los pasos
+            "mainImage" to mainImage?.url,
             "servings" to servings,
-            "appliedFilters" to appliedFilters.map { it.name },
             "createdAt" to createdAt.toString(),
             "isFavorite" to isFavorite
         )
     }
-
 }

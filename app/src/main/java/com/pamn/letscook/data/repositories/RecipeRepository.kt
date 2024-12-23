@@ -21,6 +21,7 @@ class RecipeRepository(
     private val userRepository: UserRepository,
     private val ingredientRepository: IngredientRepository
 ) {
+    /*
     // Error handling similar to IngredientRepository
     sealed class RecipeError : Exception() {
         object NetworkError : RecipeError() {
@@ -335,5 +336,5 @@ class RecipeRepository(
                 else -> println("Unknown error: ${error.message}")
             }
         }
-    }
+    }*/
 }

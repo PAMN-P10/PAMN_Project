@@ -66,6 +66,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx")
     // Para convertir imágenes a Base64 (esto no es necesario si ya usas BitmapFactory)
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")  // Esto es para el uso con la UI si usas alguna vista.
+    implementation ("com.google.code.gson:gson:2.8.8")
 
 
     implementation(libs.androidx.core.ktx)

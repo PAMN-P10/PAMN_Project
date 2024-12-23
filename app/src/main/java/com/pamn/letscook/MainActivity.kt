@@ -85,13 +85,13 @@ class MainActivity : ComponentActivity() {
                 // Llamadas para inicializar ingredientes y recetas al iniciar la app
                 LaunchedEffect(Unit) {
                     ingredientViewModel.initializeIngredients()
-                    recipeViewModel.initializeRecipes()
+                    //recipeViewModel.initializeRecipes()
                 }
 
                 NavigationWrapper(
                     ingredientRepository = ingredientRepository,
                     ingredientInitializer = ingredientInitializer,
-                    recipeRepository = recipeRepository,
+                    //recipeRepository = recipeRepository,
                     recipeInitializer = recipeInitializer,
                 )
             }

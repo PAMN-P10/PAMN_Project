@@ -15,7 +15,6 @@ import androidx.navigation.compose.composable
 import com.google.firebase.firestore.FirebaseFirestore
 import com.pamn.letscook.data.repositories.IngredientRepository
 import com.pamn.letscook.data.repositories.RecipeInitializer
-import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.domain.usecases.IngredientInitializer
 import com.pamn.letscook.presentation.components.IngredientListScreen
@@ -47,17 +46,17 @@ import com.pamn.letscook.presentation.viewmodel.UserViewModel
 fun NavigationWrapper(
     ingredientRepository: IngredientRepository,
     ingredientInitializer: IngredientInitializer,
-    recipeRepository: RecipeRepository,
+    //recipeRepository: RecipeRepository,
     recipeInitializer: RecipeInitializer
 ) {
     val navHostController = rememberNavController()
 
     // Instanciar la ViewModelFactory
-    val recipeFactory = RecipeViewModelFactory(
+    /*val recipeFactory = RecipeViewModelFactory(
         recipeRepository = recipeRepository,
         recipeInitializer = recipeInitializer
-    )
-    val recipeViewModel: RecipeViewModel = viewModel(factory = recipeFactory)
+    )*/
+    val recipeViewModel: RecipeViewModel = viewModel(/*factory = recipeFactory*/)
 
     val ingredientFactory = IngredientViewModelFactory(
         ingredientRepository = ingredientRepository,
@@ -75,7 +74,8 @@ fun NavigationWrapper(
     NavHost(
         navController = navHostController,
        // startDestination = "welcome_screen"
-        startDestination = if (userViewModel.currentUser.value != null) "fav_screen" else "welcome_screen"
+        startDestination = if (userViewModel.currentUser.value != null) "recipeform1_screen" else "welcome_screen"
+        //startDestination = "recipeform1_screen"
     ) {
         composable("welcome_screen") {
             WelcomeScreen(navController = navHostController)
@@ -149,7 +149,7 @@ fun NavigationWrapper(
                 recipeViewModel = recipeViewModel,
                 ingredientViewModel = ingredientViewModel,
                 recipeFilterViewModel = recipeFilterViewModel,
-                userViewModel = userViewModel,
+                //userViewModel = userViewModel,
                 navController = navHostController
             )
         }
@@ -159,8 +159,8 @@ fun NavigationWrapper(
             val isLoading = remember { mutableStateOf(true) }
 
             LaunchedEffect(recipeTitle) {
-                val recipe = recipeViewModel.loadRecipeByTitleFromRepository(recipeTitle)
-                recipeState.value = recipe
+                //val recipe = recipeViewModel.loadRecipeByTitleFromRepository(recipeTitle)
+                //recipeState.value = recipe
                 isLoading.value = false
             }
 

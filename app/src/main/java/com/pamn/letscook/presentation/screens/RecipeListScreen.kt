@@ -39,16 +39,15 @@ fun PopularRecipesScreen(
     recipeViewModel: RecipeViewModel = viewModel(),
     ingredientViewModel: IngredientViewModel = viewModel(),
     recipeFilterViewModel: RecipeFilterViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel(),
     navController: NavController,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val filteredRecipes by recipeFilterViewModel.filteredRecipes.collectAsState()
 
     LaunchedEffect(Unit) {
-        userViewModel.currentUserId?.let { userId ->
-            recipeViewModel.loadFavoritesFromFirestore(userId)
-        }
+        /*recipeViewModel.initializeRecipes()
+        ingredientViewModel.initializeIngredients()
+        recipeViewModel.loadFavoritesFromDatabase()*/
     }
 
     val recipes by recipeViewModel.recipes.collectAsState()
@@ -58,14 +57,18 @@ fun PopularRecipesScreen(
     val isLoading by recipeViewModel.isLoading.collectAsState()
     val errorMessage by recipeViewModel.errorMessage.collectAsState()
 
+    LaunchedEffect(filters, recipes) {
+        recipeFilterViewModel.updateFilters(filters, recipes)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Popular Recipes") },
                 actions = {
-                    IconButton(onClick = { recipeViewModel.loadRecipes() }) {
+                    /*IconButton(onClick = { recipeViewModel.loadRecipes() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh Recipes")
-                    }
+                    }*/
                 }
             )
         },
@@ -87,11 +90,11 @@ fun PopularRecipesScreen(
                     searchText = searchQuery,
                     onSearchTextChange = { query ->
                         searchQuery = query
-                        recipeViewModel.filterRecipesByName(query)
+                        //recipeViewModel.filterRecipesByName(query)
                     },
                     onSearchVoiceInput = { voiceQuery ->
                         searchQuery = voiceQuery
-                        recipeViewModel.filterRecipesByName(voiceQuery)
+                        //recipeViewModel.filterRecipesByName(voiceQuery)
                     }
                 )
 
@@ -124,11 +127,7 @@ fun PopularRecipesScreen(
                     recipes.isNotEmpty() -> RecipesList(
                         recipes = recipes,
                         onRecipeClick = { recipeTitle -> navController.navigate("RecipeDetail/$recipeTitle") },
-                        onFavoriteClick = { recipe ->
-                            userViewModel.currentUserId?.let { userId ->
-                                recipeViewModel.toggleFavorite(recipe, userId)
-                            }
-                        }
+                        onFavoriteClick = { recipe -> recipeViewModel.toggleFavorite(recipe) }
                     )
                     else -> Text(
                         text = "No recipes available",
@@ -233,7 +232,7 @@ fun RecipeCard(
                         Text("${recipe.preparationTime} min")
                     }
 
-                    Text(
+                    /*Text(
                         text = recipe.difficulty.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = when (recipe.difficulty) {
@@ -241,7 +240,7 @@ fun RecipeCard(
                             DifficultyLevel.Intermediate -> Color.Yellow
                             DifficultyLevel.Advanced -> Color.Red
                         }
-                    )
+                    )*/
 
                     IconButton(onClick = { onFavoriteClick(recipe) }) {
                         Icon(

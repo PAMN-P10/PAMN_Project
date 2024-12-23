@@ -1,12 +1,17 @@
 package com.pamn.letscook.presentation.screens
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -183,6 +189,26 @@ fun RecipeForm2Screen(
                     onRemove = { steps.removeAt(it) }
                 )
             }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .width(150.dp)
+                .height(100.dp)
+                .border(width = 1.dp,color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.onPrimary)
+        ) {
+            /*ImagePicker(
+                imageUri = imageUri, // Pasar el URI de la imagen
+                onImagePicked = { uri ->
+                    imageUri = uri // Actualizar el URI en el estado
+                    recipeViewModel.image = uri.toString() // Guardar el URI en el ViewModel
+                }
+                )*/
+
         }
 
         Spacer(Modifier.height(16.dp))
@@ -381,4 +407,74 @@ fun ShowImage(uri: Uri) {
         painter = painter,
         contentDescription = "Selected Image"
     )
+}
+
+
+@Composable
+fun ImagePicker(
+    imageUri: Uri?,
+    onImagePicked: (Uri) -> Unit
+) {
+    val context = LocalContext.current
+    var selectedImageUri by remember { mutableStateOf<Uri?>(imageUri) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            // Persistir permisos para este URI
+            val contentResolver = context.contentResolver
+            try {
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            } catch (e: SecurityException) {
+                Log.e("ImagePicker", "Failed to persist URI permissions: ${e.message}")
+            }
+            onImagePicked(it)
+            selectedImageUri = it
+        }
+    }
+
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                launcher.launch(arrayOf("image/*"))
+            }
+    ) {
+        if (selectedImageUri != null) {
+            val bitmap = try {
+                MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
+            } catch (e: Exception) {
+                Log.e("ImagePicker", "Error loading image: ${e.message}")
+                null
+            }
+
+            bitmap?.let {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(100.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "Upload Icon",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(50.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Upload Photo",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 16.sp
+        )
+    }
 }

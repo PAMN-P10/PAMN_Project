@@ -38,6 +38,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.gson.Gson
+import com.pamn.letscook.domain.models.Ingredient
+import com.pamn.letscook.domain.models.MeasurementUnit
+import com.pamn.letscook.domain.models.Recipe
 import com.pamn.letscook.presentation.components.TopBar
 import com.pamn.letscook.presentation.viewmodel.RecipeViewModel
 
@@ -52,6 +56,8 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+    val user = recipeViewModel.user
+    var unit by remember { mutableStateOf(MeasurementUnit.GRAMS) }
 
     Column(
         modifier = Modifier
@@ -68,22 +74,19 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
-            TextField(
-                value = recipeViewModel.title,
-                onValueChange = { newValue -> recipeViewModel.title = newValue },
-                label = { Text("Title") },
+            BasicTextField(
+                value = recipeViewModel.title, // Replace this with the title state variable
+                onValueChange = { recipeViewModel.title = it }, // Handle title change
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Transparent),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent,
-                )
+                    .padding(3.dp),
+                textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    if (recipeViewModel.title.isEmpty()) {
+                        Text("Title", fontSize = 16.sp, color = Color.Gray)
+                    }
+                    innerTextField()
+                }
             )
         }
         Row(
@@ -93,7 +96,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
             Box(
                 modifier = Modifier
                     .width(200.dp)
-                    .height(100.dp)
+                    .height(120.dp)
                     .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                     .clip(MaterialTheme.shapes.medium)
                     .verticalScroll(scrollState)
@@ -108,33 +111,162 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                     textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.primary),
                     decorationBox = { innerTextField ->
                         if (recipeViewModel.description.isEmpty()) {
-                            Text("Description...", fontSize = 16.sp, color = androidx.compose.ui.graphics.Color.Gray)
+                            Text("Description...", fontSize = 16.sp, color = Color.Gray)
                         }
                         innerTextField()
                     }
                 )
             }
-            Box(
+            Spacer(modifier = Modifier.width(2.dp))
+            Column(
                 modifier = Modifier
-                    .width(150.dp)
-                    .height(100.dp)
-                    .border(width = 1.dp,color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.onPrimary)
+                    .width(190.dp)
+                    .height(120.dp)
             ) {
-                ImagePicker(
-                    imageUri = imageUri, // Pasar el URI de la imagen
-                    onImagePicked = { uri ->
-                        imageUri = uri // Actualizar el URI en el estado
-                        recipeViewModel.image = uri.toString() // Guardar el URI en el ViewModel
+                var expanded by remember { mutableStateOf(false) }
+                var selectedOption by remember { mutableStateOf("Select Difficulty") }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .clip(MaterialTheme.shapes.small),
+                ) {
+                    Text(
+                        text = selectedOption ?: "Select Difficulty",
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .padding(1.dp)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listOf("Beginner", "Intermediate", "Advanced").forEach { level ->
+                            DropdownMenuItem(
+                                text = { Text(level) },
+                                onClick = {
+                                    selectedOption = level
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
-
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                var expanded2 by remember { mutableStateOf(false) }
+                var selectedOptions2  = remember { mutableStateListOf<String>() }
+                val allergens = listOf(
+                    "Celery", "Cereals", "Crustaceans", "Eggs", "Fish", "Lupin", "Milk",
+                    "Molluscs", "Mustard", "Nuts", "Peanuts", "Sesame seeds", "Soya", "Sulphites"
                 )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .clip(MaterialTheme.shapes.small),
+                ) {
+                    Text(
+                        text = if (selectedOptions2.isEmpty()) "Select Allergens" else "${selectedOptions2.size} selected",
+                        modifier = Modifier
+                            .clickable { expanded2 = true }
+                            .padding(1.dp)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    DropdownMenu(expanded = expanded2, onDismissRequest = { expanded2 = false }) {
+                        allergens.forEach { allergen ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                        Text(allergen)
+                                        Spacer(Modifier.weight(1f))
+                                        if (allergen in selectedOptions2) Text("✔", color = MaterialTheme.colorScheme.primary)
+                                    }
+                                },
+                                onClick = {
+                                    if (allergen in selectedOptions2) selectedOptions2.remove(allergen)
+                                    else selectedOptions2.add(allergen)
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                var expanded3 by remember { mutableStateOf(false) }
+                var selectedOptions3  = remember { mutableStateListOf<String>() }
+                val type = listOf(
+                    "Organic", "Gluten-free", "Dairy-free", "Sweet", "Savory",
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .clip(MaterialTheme.shapes.small),
+                ) {
+                    Text(
+                        text = if (selectedOptions3.isEmpty()) "Select Type of Food" else "${selectedOptions3.size} selected",
+                        modifier = Modifier
+                            .clickable { expanded3 = true }
+                            .padding(1.dp)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    DropdownMenu(expanded = expanded3, onDismissRequest = { expanded3 = false }) {
+                        allergens.forEach { allergen ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                        Text(allergen)
+                                        Spacer(Modifier.weight(1f))
+                                        if (allergen in selectedOptions3) Text("✔", color = MaterialTheme.colorScheme.primary)
+                                    }
+                                },
+                                onClick = {
+                                    if (allergen in selectedOptions3) selectedOptions3.remove(allergen)
+                                    else selectedOptions3.add(allergen)
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                //Text(text = "Approximate duration:", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp,  modifier = Modifier.align(Alignment.Start))
+                var timeText by remember { mutableStateOf("") }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .clip(MaterialTheme.shapes.small)
+                ) {
+                    BasicTextField(
+                        value = timeText,
+                        onValueChange = { timeText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.primary),
+                        decorationBox = { innerTextField ->
+                            // Combine "Prep Time: " with the input text, or default to placeholder
+                            if (timeText.isEmpty()) {
+                                Text(
+                                    text = "Prep Time: HH:MM:SS",
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                )
+                            }
+                            innerTextField()
+                        }
+                    )
+                }
             }
         }
         Column(
             modifier = Modifier
-                .height(200.dp)
+                .height(260.dp)
                 .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.onPrimary)
@@ -202,7 +334,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(300.dp)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.onPrimary)
                 .border(
@@ -306,6 +438,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                             }
                         }
                         var expanded by remember { mutableStateOf(false) }
+                        var unit by remember { mutableStateOf(MeasurementUnit.GRAMS) } // Default value is MeasurementUnit.GRAMS
                         Box(
                             modifier = Modifier
                                 .width(80.dp)
@@ -323,7 +456,7 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = unit,
+                                    text = unit.displayName, // Use the displayName of the MeasurementUnit enum to display the selected unit
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Center
@@ -344,17 +477,17 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
                                     .border(width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.medium)
                                     .clip(MaterialTheme.shapes.medium)
                             ) {
-                                listOf("kg", "L", "cups", "tbsp", "tsp").forEach { unitOption ->
+                                MeasurementUnit.values().forEach { unitOption ->
                                     DropdownMenuItem(
                                         text = {
                                             Text(
-                                                text = unitOption,
+                                                text = unitOption.displayName, // Use the displayName for display in the dropdown
                                                 color = MaterialTheme.colorScheme.primary
                                             )
                                         },
                                         onClick = {
-                                            recipeViewModel.selectedIngredients[index] =
-                                                Triple(ingredientName, ingredientQuantity, unitOption)
+                                            // Update the unit with the MeasurementUnit enum value
+                                            unit = unitOption // Now we store the MeasurementUnit enum directly
                                             expanded = false
                                         }
                                     )
@@ -380,24 +513,29 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
         Spacer(Modifier.height(2.dp))
         Button(
             onClick = {
-                Log.d("Navigation", "Title: ${recipeViewModel.title}")
-                Log.d("Navigation", "Description: ${recipeViewModel.description}")
-                Log.d("Navigation", "Image: ${recipeViewModel.image}")
-                Log.d("Navigation", "Selected Ingredients: ${recipeViewModel.selectedIngredients}")
-                if (recipeViewModel.title.isNotBlank() &&
-                    recipeViewModel.description.isNotBlank() &&
-                    //recipeViewModel.image.isNotBlank() &&
-                    recipeViewModel.selectedIngredients.isNotEmpty()
-                ) {
-                    val encodedTitle = Uri.encode(recipeViewModel.title)
-                    val encodedDescription = Uri.encode(recipeViewModel.description)
-                    val encodedImageUri = Uri.encode(recipeViewModel.image)
-                    val encodedIngredients = Uri.encode(recipeViewModel.selectedIngredients.joinToString(";"))
-                    navController.navigate(
-                        "recipeform2_screen/$encodedTitle/$encodedDescription/$encodedImageUri/$encodedIngredients"
+                if (recipeViewModel.title.isNotEmpty() && recipeViewModel.description.isNotEmpty()) {
+                    // Construir la receta para pasarla a RecipeForm2
+                    val recipe = Recipe(
+                        title = recipeViewModel.title,
+                        description = recipeViewModel.description,
+                        author = user,
+                        difficulty = recipeViewModel.selectedDifficulty,
+                        preparationTime = recipeViewModel.prepTime,  // asume que este dato está recogido en el ViewModel
+                        allergens = recipeViewModel.selectedAllergens,
+                        ingredients = recipeViewModel.selectedIngredients.map { ingredient ->
+                            Ingredient(
+                                name = ingredient.first,
+                                quantity = ingredient.second,
+                                unit = unit,
+                                type = TODO(),
+                                isAllergen = TODO(),
+                                image = TODO()
+                            )
+                        },
+                        steps = emptyList()  // Empty for now, we fill this in RecipeForm2
                     )
-                } else {
-                    Toast.makeText(context, "All fields are required!", Toast.LENGTH_SHORT).show()
+                    val ingredientJson = Gson().toJson(recipe)  // Serialize the `Ingredient` object to JSON
+                    navController.navigate("recipe_form2_screen/$ingredientJson")
                 }
             },
             modifier = Modifier
@@ -418,71 +556,6 @@ fun RecipeForm1Screen(navController: NavHostController, recipeViewModel: RecipeV
     }
 }
 
-@Composable
-fun ImagePicker(
-    imageUri: Uri?,
-    onImagePicked: (Uri) -> Unit
-) {
-    val context = LocalContext.current
-    var selectedImageUri by remember { mutableStateOf<Uri?>(imageUri) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            // Persistir permisos para este URI
-            val contentResolver = context.contentResolver
-            try {
-                contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
-            } catch (e: SecurityException) {
-                Log.e("ImagePicker", "Failed to persist URI permissions: ${e.message}")
-            }
-            onImagePicked(it)
-            selectedImageUri = it
-        }
-    }
-
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                launcher.launch(arrayOf("image/*"))
-            }
-    ) {
-        if (selectedImageUri != null) {
-            val bitmap = try {
-                MediaStore.Images.Media.getBitmap(context.contentResolver, selectedImageUri)
-            } catch (e: Exception) {
-                Log.e("ImagePicker", "Error loading image: ${e.message}")
-                null
-            }
-
-            bitmap?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Icon(
-            imageVector = Icons.Default.Add,
-            contentDescription = "Upload Icon",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(50.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Upload Photo",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 16.sp
-        )
-    }
+fun Ingredient.toJson(): String {
+    return Gson().toJson(this)
 }

@@ -15,6 +15,7 @@ import com.pamn.letscook.data.repositories.RecipeInitializer
 import com.pamn.letscook.data.repositories.RecipeRepository
 import com.pamn.letscook.domain.models.Ingredient
 import com.pamn.letscook.domain.models.Recipe
+import com.pamn.letscook.domain.models.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,8 +23,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 class RecipeViewModel(
-    private val repository: RecipeRepository,
-    private val recipeInitializer: RecipeInitializer
+    //private val repository: RecipeRepository,
+    //private val recipeInitializer: RecipeInitializer
+    private val recipe: Recipe
 ) : ViewModel() {
 
     // Estados para la UI
@@ -52,7 +54,6 @@ class RecipeViewModel(
     // Lista de ingredientes seleccionados (par nombre de ingrediente, cantidad y unidad)
     var selectedIngredients = mutableStateListOf<Triple<String, Double, String>>()
 
-    /*-------------------*/
     private val firestore = FirebaseFirestore.getInstance()
     // Suponiendo que tienes un método para el usuario logueado y almacenamiento
     fun toggleFavorite(recipe: Recipe, userId: String) {
@@ -98,9 +99,15 @@ class RecipeViewModel(
             }
     }
 
+    /*-------------------*/
+    // In RecipeViewModel
+    var user by mutableStateOf<User?>(null)  // Assuming you have a User class
+    var selectedDifficulty by mutableStateOf<String>("Beginner") // Default difficulty
+    var prepTime by mutableStateOf<String>("") // Preparation time
+    var selectedAllergens = mutableStateListOf<String>() // List of allergens
 
     /*--------------------*/
-
+/*
     // Inicializar recetas si están vacías
     fun initializeRecipes() {
         viewModelScope.launch {
@@ -226,7 +233,7 @@ class RecipeViewModel(
                 _isLoading.value = false
             }
         }
-    }
+    }*/
 
     // Métodos para manipular ingredientes seleccionados
     fun addIngredient(name: String, quantity: Double, unit: String) {
@@ -254,7 +261,7 @@ class RecipeViewModel(
         }
         imagePath = file.absolutePath
     }
-
+/*
     // Manejo centralizado de errores
     private fun handleRecipeError(error: Throwable) {
         when (error) {
@@ -271,7 +278,7 @@ class RecipeViewModel(
                 _errorMessage.value = "Unknown error: ${error.message}"
             }
         }
-    }
+    }*/
 }
 
 /**
