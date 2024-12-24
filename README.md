@@ -22,6 +22,49 @@
 5. **Compatibilidad**:
    - Adaptación dinámica a diferentes configuraciones de dispositivos.
 
+## Estructura del Proyecto
+
+```
+letscook/
+├── navigation/
+│   └── NavigationWrapper.kt          # Controla la navegación entre pantallas.
+├── data/
+│   ├── local/                        # Base de datos local o caché.
+│   └── repositories/                 # Gestión de datos en Firebase.
+├── domain/
+│   ├── models/                       # Clases de dominio (e.g., Recipe, Ingredient).
+│   └── useCases/                     # Lógica de negocio encapsulada en casos de uso.
+├── presentation/
+│   ├── components/                   # Componentes visuales reutilizables.
+│   ├── screens/                      # Pantallas específicas de la app.
+│   └── viewmodel/                    # Gestión del estado de la aplicación.
+├── services/
+│   ├── AuthService                   # Servicios de autenticación.
+│   └── RecipeService                 # Operaciones relacionadas con recetas.
+├── ui/
+│   ├── font/                         # Tipografías.
+│   ├── theme/                        # Definición de colores y temas.
+├── MainActivity.kt                   # Punto de entrada de la app.
+```
+
+## Instalación y configuración
+
+1. **Requisitos previos**:
+   - Android Studio instalado.
+   - Firebase configurado con autenticación y Firestore habilitados.
+
+2. **Clonación del repositorio**:
+   ```bash
+   git clone https://github.com/PAMN-P10/PAMN_Project
+   cd PAMN_Project
+   ```
+
+3. **Configuración de Firebase**:
+   - Descarga el archivo `google-services.json` desde tu consola de Firebase y colócalo en el directorio `app/`.
+
+4. **Ejecutar la aplicación**:
+   - Abre el proyecto en Android Studio y sincroniza las dependencias.
+   - Conecta un dispositivo físico o usa un emulador para ejecutar la app.
 
 ## Paleta de colores
 
@@ -67,49 +110,6 @@
 - ### Profile Screens
 ![Profile](https://drive.google.com/uc?export=view&id=1NO4A46aKfeX5y9FZ4doqYE4tyQ0ZxF5v)
 
-## Estructura del Proyecto
-
-```
-letscook/
-├── navigation/
-│   └── NavigationWrapper.kt          # Controla la navegación entre pantallas.
-├── data/
-│   ├── local/                        # Base de datos local o caché.
-│   └── repositories/                 # Gestión de datos en Firebase.
-├── domain/
-│   ├── models/                       # Clases de dominio (e.g., Recipe, Ingredient).
-│   └── useCases/                     # Lógica de negocio encapsulada en casos de uso.
-├── presentation/
-│   ├── components/                   # Componentes visuales reutilizables.
-│   ├── screens/                      # Pantallas específicas de la app.
-│   └── viewmodel/                    # Gestión del estado de la aplicación.
-├── services/
-│   ├── AuthService                   # Servicios de autenticación.
-│   └── RecipeService                 # Operaciones relacionadas con recetas.
-├── ui/
-│   ├── font/                         # Tipografías.
-│   ├── theme/                        # Definición de colores y temas.
-├── MainActivity.kt                   # Punto de entrada de la app.
-```
-
-## Instalación y configuración
-
-1. **Requisitos previos**:
-   - Android Studio instalado.
-   - Firebase configurado con autenticación y Firestore habilitados.
-
-2. **Clonación del repositorio**:
-   ```bash
-   git clone https://github.com/PAMN-P10/PAMN_Project
-   cd PAMN_Project
-   ```
-
-3. **Configuración de Firebase**:
-   - Descarga el archivo `google-services.json` desde tu consola de Firebase y colócalo en el directorio `app/`.
-
-4. **Ejecutar la aplicación**:
-   - Abre el proyecto en Android Studio y sincroniza las dependencias.
-   - Conecta un dispositivo físico o usa un emulador para ejecutar la app.
 
 ## Tecnologías utilizadas
 
