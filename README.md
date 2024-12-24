@@ -123,6 +123,22 @@ letscook/
   - Realtime Colors para la selección de paleta
   - Xrecorder para creación de la demo
 
+## 🛠️ Tecnologías utilizadas
+
+- **💻 Lenguaje**:
+  - [![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+- **⚙️ Frameworks**:
+  - [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-000000?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
+  - [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/)
+- **🛠️ Herramientas**:
+  - [![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?logo=androidstudio&logoColor=white)](https://developer.android.com/studio)
+  - [![Figma](https://img.shields.io/badge/Figma-F24E1E?logo=figma&logoColor=white)](https://www.figma.com/)
+  - [![Realtime Colors](https://img.shields.io/badge/Realtime%20Colors-433BFF?logo=art&logoColor=white)](https://realtimecolors.com/)
+  - [![Xrecorder](https://img.shields.io/badge/Google%20Play-3DDC84?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=videoeditor.videorecorder.screenrecorder&hl=es_419)
+
+
+
+
 ## Recursos adicionales
 
 - **[Repositorio en GitHub](https://github.com/PAMN-P10/PAMN_Project)**
