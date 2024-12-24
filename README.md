@@ -41,6 +41,31 @@
 ![Verde Intenso](https://img.shields.io/badge/Verde%20Cantoso-4CBC10?style=for-the-badge&logo=appveyor&logoColor=black)
 ![Marrón Oscuro](https://img.shields.io/badge/Marrón%20Oscuro-433B0F?style=for-the-badge&logo=appveyor&logoColor=white)
 
+## Diseño
+
+- ### Welcome Screens
+![Welcome](https://drive.google.com/uc?export=view&id=1K8u9fTSrZdsVNYvNctfnaVmOrnVRySvt)
+
+- ### Login Screens
+![Login](https://drive.google.com/uc?export=view&id=1YfRj_jsO_oNV3ilpvp-TVtrfO44Zy6AW)
+
+- ### Register Screens
+![Register1](https://drive.google.com/uc?export=view&id=1WYe9u1ObRYYldcRYuwrneanaaZPCYFjp)
+
+- ### Register Screens
+![Register2](https://drive.google.com/uc?export=view&id=1n5K_9irX8wke5Az1hX4vwjMMuCwVmpkL)
+
+- ### Home Screens
+![Home](https://drive.google.com/uc?export=view&id=1RLRQWLEDcWaye0IQjaTWQJSVXWlJe4xd)
+
+- ### Home Screens
+![Home2](https://drive.google.com/uc?export=view&id=1EMMZbIJ6QTxxL9IqYf2Riuo5WyBcK78d)
+
+- ### My Favourites Screens
+![Fav](https://drive.google.com/uc?export=view&id=1AHhUx1VxnTKtI8DyXwca-rX51gcWriia)
+
+- ### Profile Screens
+![Profile](https://drive.google.com/uc?export=view&id=1NO4A46aKfeX5y9FZ4doqYE4tyQ0ZxF5v)
 
 ## Estructura del Proyecto
 
