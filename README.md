@@ -22,7 +22,9 @@
 5. **Compatibilidad**:
    - Adaptación dinámica a diferentes configuraciones de dispositivos.
 
-## Estructura del Proyecto
+---
+
+## 🏗️ Estructura del Proyecto
 
 ```
 letscook/
@@ -47,7 +49,9 @@ letscook/
 ├── MainActivity.kt                   # Punto de entrada de la app.
 ```
 
-## Instalación y configuración
+---
+
+## ⚙️ Instalación y configuración
 
 1. **Requisitos previos**:
    - Android Studio instalado.
@@ -66,7 +70,9 @@ letscook/
    - Abre el proyecto en Android Studio y sincroniza las dependencias.
    - Conecta un dispositivo físico o usa un emulador para ejecutar la app.
 
-## Paleta de colores
+---
+
+## 🎨 Paleta de colores
 
 ### Colores principales utilizados (Modo Claro)
 ![Negro](https://img.shields.io/badge/Negro-0E0A01?style=for-the-badge&logo=appveyor&logoColor=white)
@@ -84,7 +90,9 @@ letscook/
 ![Verde Intenso](https://img.shields.io/badge/Verde%20Cantoso-4CBC10?style=for-the-badge&logo=appveyor&logoColor=black)
 ![Marrón Oscuro](https://img.shields.io/badge/Marrón%20Oscuro-433B0F?style=for-the-badge&logo=appveyor&logoColor=white)
 
-## Diseño
+---
+
+## 📱 Diseño
 
 - ### Welcome Screens
 ![Welcome](https://drive.google.com/uc?export=view&id=1K8u9fTSrZdsVNYvNctfnaVmOrnVRySvt)
@@ -110,18 +118,7 @@ letscook/
 - ### Profile Screens
 ![Profile](https://drive.google.com/uc?export=view&id=1NO4A46aKfeX5y9FZ4doqYE4tyQ0ZxF5v)
 
-
-## Tecnologías utilizadas
-
-- **Lenguaje**: Kotlin
-- **Frameworks**:
-  - Jetpack Compose
-  - Firebase (Authentication y Firestore)
-- **Herramientas**:
-  - Android Studio
-  - Figma para diseño de UI
-  - Realtime Colors para la selección de paleta
-  - Xrecorder para creación de la demo
+---
 
 ## 🛠️ Tecnologías utilizadas
 
@@ -136,17 +133,17 @@ letscook/
   - [![Realtime Colors](https://img.shields.io/badge/Realtime%20Colors-433BFF?logo=art&logoColor=white)](https://realtimecolors.com/)
   - [![Xrecorder](https://img.shields.io/badge/Google%20Play-3DDC84?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=videoeditor.videorecorder.screenrecorder&hl=es_419)
 
+---
 
-
-
-## Recursos adicionales
+## 🤲🏻 Recursos adicionales
 
 - **[Repositorio en GitHub](https://github.com/PAMN-P10/PAMN_Project)**
 - **[Diseño en Figma](https://www.figma.com/design/htmsFqPuD6mSZTQv9klp2N/PAMN?node-id=0-1&t=jG7enLGYzNC7UqTh-1)**
 - **[Vídeo de la demo](https://drive.google.com/drive/folders/1mtAmlIBz2bBTKAVWASfgpWeDxwIuwf3k?usp=sharing)**
 
-## Autores
+---
+
+## 👩🏻‍💻 Autores
 
 - **[Sara Expósito Suárez](https://github.com/SaraE5)**
 - **[Asmae Ez Zaim Driouch](https://github.com/A-rar)**
-
